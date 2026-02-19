@@ -1,0 +1,114 @@
+name: STABLE 6.0.x
+on:
+    push:
+        branches:
+            - main
+env:
+    RELEASE_BRANCH: stable
+    ENV_FILE: .env.stable
+    CROWDIN_YML: crowdin.github.yml
+jobs:
+    deploy:
+        name: Release
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - name: Install PHP and dependencies
+              run: sudo apt-get update && sudo apt-get install php php-mbstring php-xml
+            - name: Setup ENV files
+              run: cp ${{env.ENV_FILE}} .env
+            - name: Compute version
+              id: version
+              run: |
+                  RAW=$(grep '^VERSION=' .env | cut -d'"' -f2)
+                  VERSION="${RAW/\{TS\}/${{ github.run_number }}}"
+                  echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+                  echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+                  echo "Computed version: $VERSION"
+            - name: Generate changelog
+              id: changelog
+              run: |
+                  PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+                  if [ -z "$PREV_TAG" ]; then
+                    CHANGES=$(git log --pretty=format:"- %s (%h)" -20)
+                  else
+                    CHANGES=$(git log --pretty=format:"- %s (%h)" "${PREV_TAG}..HEAD")
+                  fi
+                  echo "### ${{ steps.version.outputs.tag }}" > /tmp/changelog_entry.md
+                  echo "" >> /tmp/changelog_entry.md
+                  echo "$CHANGES" >> /tmp/changelog_entry.md
+                  echo "" >> /tmp/changelog_entry.md
+
+                  # Prepend to CHANGELOG.md
+                  if [ -f CHANGELOG.md ]; then
+                    cat /tmp/changelog_entry.md CHANGELOG.md > /tmp/changelog_combined.md
+                    mv /tmp/changelog_combined.md CHANGELOG.md
+                  else
+                    mv /tmp/changelog_entry.md CHANGELOG.md
+                  fi
+                  cat /tmp/changelog_entry.md
+            - name: Get npm cache directory
+              id: npm-cache-dir
+              shell: bash
+              run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+            - name: Cache node modules
+              uses: actions/cache@v3
+              id: npm-cache
+              with:
+                  path: ${{ steps.npm-cache-dir.outputs.dir }}
+                  key: ${{ runner.os }}-node-${{env.RELEASE_BRANCH}}-${{hashFiles('**/package-lock.json')}}
+                  restore-keys: ${{ runner.os }}-node-${{env.RELEASE_BRANCH}}-
+            - name: Install NPM Dependencies
+              run: npm install && npm run namespace
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --prefer-dist --optimize-autoloader
+            - name: Build Scripts
+              run: npm run build
+            - name: Setup Crowdin file
+              run: cp ${{env.CROWDIN_YML}} crowdin.yml
+            - name: Upload translations to Crowdin
+              continue-on-error: true
+              uses: crowdin/github-action@v2.1.3
+              with:
+                  upload_sources: true
+                  upload_translations: false
+                  download_translations: true
+                  create_pull_request: false
+                  push_translations: false
+                  skip_untranslated_strings: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+                  CROWDIN_API_TOKEN: ${{ secrets.CROWDIN_API_TOKEN }}
+            - name: Make JSON from PO Files
+              run: npm run make-json
+            - name: Build Plugin File
+              run: npm run dist
+            - name: Release ZIP
+              uses: s0/git-publish-subdir-action@develop
+              env:
+                  REPO: self
+                  BRANCH: ${{env.RELEASE_BRANCH}}
+                  FOLDER: dist
+                  SQUASH_HISTORY: true
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Create Git tag
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git tag ${{ steps.version.outputs.tag }}
+                  git push origin ${{ steps.version.outputs.tag }}
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ steps.version.outputs.tag }}
+                  name: "Grootmade Connect ${{ steps.version.outputs.tag }}"
+                  generate_release_notes: true
+                  files: dist/grootmade.zip
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

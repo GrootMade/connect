@@ -1,0 +1,16 @@
+{
+  "slug": "grootmade",
+  "name": "Grootmade Connect",
+  "textdomain": "grootmade",
+  "logo": {
+    "dark": "https://raw.githubusercontent.com/GrootMade/assets/main/logo.svg",
+    "light": "https://raw.githubusercontent.com/GrootMade/assets/main/logo.svg"
+  },
+  "whitelabel": false,
+  "provider": "https://grootmade.com",
+  "typesense_api_key": "24ZxPB9jCmvCV7KwAUAVphZp7xYIjlaN",
+  "typesense_host": "search.grootmade.com",
+  "typesense_port": 443,
+  "typesense_protocol": "https",
+  "typesense_path": ""
+}

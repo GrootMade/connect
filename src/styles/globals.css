@@ -1,0 +1,40 @@
+@import "./theme.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+	:root {
+		--font-sans: 'Inter';
+		--font-heading: 'Bricolage Grotesque';
+		--radius: 0.5rem;
+		--chart-1: #e21d48;
+		--chart-2: #2a9d90;
+
+	}
+
+}
+@layer base {
+	* {
+		@apply border-border;
+	}
+	body {
+		@apply bg-background text-foreground;
+		font-synthesis-weight: none;
+		text-rendering: optimizeLegibility;
+	}
+}
+.item-description {
+	@apply space-y-4 whitespace-pre-wrap;
+	h2 {
+		@apply text-xl;
+	}
+	h3 {
+		@apply text-lg;
+	}
+	pre {
+		@apply whitespace-pre-wrap;
+	}
+}
+.ais-Hits-list {
+	@apply flex flex-col gap-4;
+}

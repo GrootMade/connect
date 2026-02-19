@@ -1,0 +1,19 @@
+/node_modules
+/includes/lib
+/.fleet
+/.idea
+/storage/logs/*.log
+/app/.DS_Store
+/composer.lock
+/build
+/deploy
+/dist
+/.env
+/languages
+/crowdin.yml
+
+# Million Lint
+.million
+
+# TSC compiled output in src/
+src/**/*.js

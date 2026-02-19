@@ -1,0 +1,14 @@
+{
+    "name": "project/plugin",
+    "type": "project",
+    "license": "GPL-2.0-or-later",
+    "config": {
+        "vendor-dir": "includes/lib"
+    },
+    "autoload": {
+        "psr-4": {
+            "Grootmade\\": "includes/src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
