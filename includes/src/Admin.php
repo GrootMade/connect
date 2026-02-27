@@ -97,6 +97,8 @@ class Admin
 					$this->update_details,
 					15 * \MINUTE_IN_SECONDS
 				);
+			} else {
+				$this->update_details = null;
 			}
 		}
 		if ($this->is_current()) {
@@ -251,7 +253,11 @@ class Admin
 		$plugin_data,
 		$status
 	) {
-		if ($this->update_details && isset($this->update_details['data'])) {
+		if (
+			$this->update_details &&
+			!is_wp_error($this->update_details) &&
+			isset($this->update_details['data'])
+		) {
 			foreach ($this->update_details['data'] as $item) {
 				if (
 					$plugin_file === $item['path'] &&
