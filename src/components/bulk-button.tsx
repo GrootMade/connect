@@ -15,35 +15,35 @@ export default function BulkButton({ item, variant, size }: Props) {
 		useActivation();
 
 	return (
-		(can_bulk_download || can_bulk_install) && (
-			<Button
-				variant={
-					variant ?? (hasItem(item.id) ? 'secondary' : 'outline')
+		<Button
+			variant={variant ?? (hasItem(item.id) ? 'secondary' : 'outline')}
+			size={size ?? 'icon'}
+			className="flex items-center gap-2"
+			disabled={
+				!activated ||
+				!active ||
+				(!can_bulk_download && !can_bulk_install)
+			}
+			title={
+				hasItem(item.id) === true
+					? __('Remove from bulk')
+					: __('Add to Bulk')
+			}
+			onClick={() => {
+				if (hasItem(item.id) === true) {
+					removeItem(item.id);
+				} else {
+					addItem({
+						id: Number(item.id),
+						type: item.type,
+						image: item.thumbnail ?? item.image,
+						title: item.title,
+						version: item.version
+					});
 				}
-				size={size ?? 'icon'}
-				className="flex items-center gap-2"
-				disabled={!activated || !active}
-				title={
-					hasItem(item.id) === true
-						? __('Remove from bulk')
-						: __('Add to Bulk')
-				}
-				onClick={() => {
-					if (hasItem(item.id) === true) {
-						removeItem(item.id);
-					} else {
-						addItem({
-							id: Number(item.id),
-							type: item.type,
-							image: item.thumbnail ?? item.image,
-							title: item.title,
-							version: item.version
-						});
-					}
-				}}
-			>
-				<ShoppingBag width={16} />
-			</Button>
-		)
+			}}
+		>
+			<ShoppingBag width={16} />
+		</Button>
 	);
 }

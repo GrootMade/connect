@@ -1,5 +1,6 @@
 import BulkButton from '@/components/bulk-button';
 import CollectionButton from '@/components/collection-button';
+import DownloadButton from '@/components/download-button';
 import InstallButton from '@/components/install-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,11 @@ export default function DownloadCard({ item }: Props) {
 						item={item}
 						variant="default"
 						className="min-w-0 flex-1"
+					/>
+					<DownloadButton
+						item={item}
+						variant="secondary"
+						size="icon"
 					/>
 					<BulkButton
 						item={item}

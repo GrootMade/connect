@@ -15,6 +15,24 @@ if (!defined('ABSPATH')) {
 	<link
 		href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Inter:wght@100..900&display=swap"
 		rel="stylesheet" />
+	<style>
+		/* Critical inline styles to prevent flash of unstyled content */
+		:root { --background: 0 0% 100%; }
+		.dark { --background: 0 0% 3.9%; }
+		html, body { margin: 0; background-color: hsl(var(--background)); }
+		#app { opacity: 0; transition: opacity .15s ease-in; }
+		#app.ready { opacity: 1; }
+	</style>
+	<script>
+		/* Apply theme class immediately to prevent flash */
+		(function() {
+			var theme = localStorage.getItem('color-scheme') || 'system';
+			if (theme === 'system') {
+				theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+			}
+			document.documentElement.classList.add(theme);
+		})();
+	</script>
 		<?php wp_print_head_scripts(); ?>
 </head>
 

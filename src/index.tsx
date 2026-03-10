@@ -7,4 +7,5 @@ const el = document.getElementById(container_id);
 if (el) {
 	const root = createRoot(el);
 	root.render(<App />);
+	el.classList.add('ready');
 }

@@ -76,7 +76,7 @@ export default function ItemRequestUpdate({ item, ...buttonProps }: Props) {
 					title={__('Request Update')}
 					{...buttonProps}
 				>
-					<RefreshCw />
+					<RefreshCw className="h-4 w-4" />
 				</Button>
 			</DialogTrigger>
 			<DialogContent>

@@ -15,7 +15,7 @@ export default function DownloadButton({ item, variant, size }: Props) {
 	const { downloadItem } = useInstall();
 	const [isPending, setIsPending] = useState(false);
 
-	if (item.type === 'request' || !can_download) {
+	if (item.type === 'request') {
 		return null;
 	}
 
@@ -24,7 +24,7 @@ export default function DownloadButton({ item, variant, size }: Props) {
 			variant={variant ?? 'outline'}
 			size={size ?? 'icon'}
 			className="flex items-center gap-2"
-			disabled={isPending || !activated || !active}
+			disabled={isPending || !activated || !active || !can_download}
 			title={__('Download')}
 			onClick={() => {
 				setIsPending(true);
