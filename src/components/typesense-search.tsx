@@ -38,7 +38,11 @@ function Hit({ hit }: { hit: TPostItem }) {
 	);
 }
 
-export default function TypeSenseSearch() {
+export default function TypeSenseSearch({
+	onQueryChange
+}: {
+	onQueryChange?: (query: string) => void;
+}) {
 	const { query, refine, isSearchStalled, clear } = useSearchBox();
 	const [showResults, setShowResults] = useState(false);
 	const wrapperRef = useRef<HTMLDivElement>(null);
@@ -77,8 +81,10 @@ export default function TypeSenseSearch() {
 				type="text"
 				value={query}
 				onChange={(event) => {
-					refine(event.currentTarget.value);
-					setShowResults(event.currentTarget.value.length > 0);
+					const value = event.currentTarget.value;
+					refine(value);
+					setShowResults(value.length > 0);
+					onQueryChange?.(value);
 				}}
 				onClick={(event) => {
 					setShowResults(event.currentTarget.value.length > 0);
@@ -94,6 +100,7 @@ export default function TypeSenseSearch() {
 						clear();
 						setShowResults(false);
 						inputRef.current?.focus();
+						onQueryChange?.('');
 					}}
 					className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground"
 				>

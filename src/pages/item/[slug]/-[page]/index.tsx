@@ -386,6 +386,8 @@ export default function Component() {
 			description={item_type?.description}
 			isFetching={isFetching}
 			isLoading={isItemsLoading}
+			filterBar={<FilterBar collection={dataCollection} />}
+			onSearchQueryChange={(query) => dataCollection.setSearch(query)}
 			preloader={
 				<div className="grid grid-cols-1 md:grid-cols-3">
 					<PostGridItemSkeleton />
@@ -403,7 +405,6 @@ export default function Component() {
 		>
 			{data && (
 				<>
-					<FilterBar collection={dataCollection} />
 					{data.meta && data.meta?.total > 0 && (
 						<div className="text-center text-muted-foreground">
 							{sprintf(

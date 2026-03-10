@@ -16,22 +16,25 @@ export default function SettingControl({
 	children: React.ReactElement & { props: { id?: string } };
 }) {
 	const fallbackId = useId();
-	// Extract the ID from the child, if available
 	const childId = Children.toArray(children)
 		.filter((child): child is React.ReactElement => isValidElement(child))
 		.find((child) => 'id' in child.props)?.props.id;
 
-	// Use either the provided ID or fallback to the generated ID
 	const id = childId || fallbackId;
 	return (
-		<div className="grid gap-4 sm:grid-cols-4">
-			<Label
-				className="cursor-pointer"
-				htmlFor={id}
-			>
-				{label}
-			</Label>
-			<div className="col-span-3 flex flex-col gap-2">
+		<div className="flex items-start justify-between gap-6 py-4">
+			<div className="flex flex-col gap-1">
+				<Label
+					className="cursor-pointer text-sm font-medium"
+					htmlFor={id}
+				>
+					{label}
+				</Label>
+				<p className="text-[13px] text-muted-foreground">
+					{description}
+				</p>
+			</div>
+			<div className="flex shrink-0 items-center">
 				{Children.map(children, (child) =>
 					isValidElement(child)
 						? cloneElement(child, {
@@ -39,9 +42,6 @@ export default function SettingControl({
 							})
 						: child
 				)}
-				<div className="text-sm text-muted-foreground">
-					{description}
-				</div>
 			</div>
 		</div>
 	);

@@ -2,9 +2,12 @@ import { Button } from '@/components/ui/button';
 import {
 	Card,
 	CardContent,
+	CardDescription,
 	CardFooter,
-	CardHeader
+	CardHeader,
+	CardTitle
 } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import useSetting from '@/hooks/use-setting';
 import { __ } from '@/lib/i18n';
@@ -15,54 +18,50 @@ export default function SettingsForm() {
 
 	return (
 		!!settings && (
-			<>
-				<Card>
-					<CardHeader className="border-b">
-						{__('General')}
-					</CardHeader>
-					<CardContent className="flex flex-col gap-4">
-						<div className="flex flex-col gap-7 sm:gap-2">
-							<SettingControl
-								label={__('Auto Activate')}
-								description={__(
-									'Automatically activate plugin upon installation.'
-								)}
-							>
-								<Switch
-									checked={settings.autoactivate === true}
-									onCheckedChange={(checked) =>
-										setSetting('autoactivate', checked)
-									}
-								/>
-							</SettingControl>
-
-							<SettingControl
-								label={__('Remove Data?')}
-								description={__(
-									'Remove plugin settings and activation data on uninstall'
-								)}
-							>
-								<Switch
-									checked={
-										settings.clean_on_uninstall === true
-									}
-									onCheckedChange={(checked) =>
-										setSetting(
-											'clean_on_uninstall',
-											checked
-										)
-									}
-								/>
-							</SettingControl>
-						</div>
-					</CardContent>
-					<CardFooter>
-						<Button onClick={updateSettings}>
-							{__('Save Settings')}
-						</Button>
-					</CardFooter>
-				</Card>
-			</>
+			<Card>
+				<CardHeader>
+					<CardTitle>{__('General')}</CardTitle>
+					<CardDescription>
+						{__('Manage general plugin behavior.')}
+					</CardDescription>
+				</CardHeader>
+				<Separator />
+				<CardContent className="flex flex-col">
+					<SettingControl
+						label={__('Auto Activate')}
+						description={__(
+							'Automatically activate plugin upon installation.'
+						)}
+					>
+						<Switch
+							checked={settings.autoactivate === true}
+							onCheckedChange={(checked) =>
+								setSetting('autoactivate', checked)
+							}
+						/>
+					</SettingControl>
+					<Separator />
+					<SettingControl
+						label={__('Remove Data on Uninstall')}
+						description={__(
+							'Remove plugin settings and activation data when uninstalling.'
+						)}
+					>
+						<Switch
+							checked={settings.clean_on_uninstall === true}
+							onCheckedChange={(checked) =>
+								setSetting('clean_on_uninstall', checked)
+							}
+						/>
+					</SettingControl>
+				</CardContent>
+				<Separator />
+				<CardFooter className="pt-5">
+					<Button onClick={updateSettings}>
+						{__('Save Settings')}
+					</Button>
+				</CardFooter>
+			</Card>
 		)
 	);
 }

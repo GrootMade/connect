@@ -66,7 +66,7 @@ export default function AdCard({ style, className }: AdCardProps) {
 			rel="noopener noreferrer"
 			className={cn(
 				cardClass,
-				'animate-reveal no-underline',
+				'no-underline',
 				isThankYou
 					? 'border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15'
 					: 'border-l-2 border-l-primary/60 hover:bg-accent',

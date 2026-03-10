@@ -110,7 +110,7 @@ export default function PostGridItem({ item, style }: Props) {
 
 	return (
 		<div
-			className={`${cardClass} animate-reveal hover:bg-accent`}
+			className={`${cardClass} hover:bg-accent`}
 			style={style}
 		>
 			<Link

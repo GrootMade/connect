@@ -36,6 +36,8 @@ type Props = {
 	preloader?: JSX.Element;
 	error?: JSX.Element;
 	breadcrump?: BreadCrumbType[];
+	filterBar?: React.ReactNode;
+	onSearchQueryChange?: (query: string) => void;
 };
 
 export function AppPageShell({
@@ -49,7 +51,9 @@ export function AppPageShell({
 	isError = false,
 	preloader: PreloaderComponent,
 	error: ErrorComponent,
-	breadcrump
+	breadcrump,
+	filterBar,
+	onSearchQueryChange
 }: Props) {
 	const Container = as ?? 'main';
 	if (!PreloaderComponent) {
@@ -84,6 +88,8 @@ export function AppPageShell({
 				title={title}
 				showTitle={showTitle}
 				description={description}
+				filterBar={filterBar}
+				onSearchQueryChange={onSearchQueryChange}
 			/>
 			<Container
 				className={cn([
@@ -141,39 +147,49 @@ type PageHeaderProps = {
 	title: string;
 	showTitle: boolean;
 	description?: string;
+	filterBar?: React.ReactNode;
+	onSearchQueryChange?: (query: string) => void;
 };
 
-function PageHeader({ title, showTitle, description }: PageHeaderProps) {
+function PageHeader({
+	title,
+	showTitle,
+	description,
+	filterBar,
+	onSearchQueryChange
+}: PageHeaderProps) {
 	useEffect(() => {
 		document.title = title;
 	}, [title]);
 	return (
-		<header className="flex flex-col gap-4 border-b border-border py-6">
-			<div className="flex flex-col items-start gap-4 sm:flex-row-reverse">
-				<div className="hidden lg:flex lg:flex-row lg:gap-2">
-					<ModeToggle />
+		<>
+			<header className="flex flex-col gap-4 border-b border-border py-6">
+				{/* Row 1: Full-width search + actions */}
+				<div className="flex flex-row items-center gap-2">
+					<div className="flex-1">
+						<TypeSenseSearch onQueryChange={onSearchQueryChange} />
+					</div>
+					<LanguageSelector />
 					<BulkAction />
-					{<LanguageSelector />}
+					<ModeToggle />
 				</div>
-				<div className="flex w-full flex-1 flex-col gap-4">
-					<TypeSenseSearch />
-					<div className="flex flex-1 flex-col gap-1">
-						{showTitle && (
-							<h1 className="font-heading text-2xl font-bold">
-								{title}
-							</h1>
-						)}
+				{/* Row 2: Page title + Ad banner */}
+				{showTitle && (
+					<div className="flex flex-col gap-1">
+						<h1 className="font-heading text-2xl font-bold">
+							{title}
+						</h1>
 						{description && (
 							<p className="max-w-xl text-xs text-muted-foreground/60">
-								{__(
-									'All product names, logos, and brands are property of their respective owners. We are not affiliated with or endorsed by any of the authors or products listed.'
-								)}
+								{description}
 							</p>
 						)}
 					</div>
-				</div>
-			</div>
-			<AdBanner />
-		</header>
+				)}
+				<AdBanner />
+				{/* Row 3: Filter bar (only on listing pages) */}
+				{filterBar && <div className="border-t pt-4">{filterBar}</div>}
+			</header>
+		</>
 	);
 }

@@ -12,14 +12,16 @@ export default function Component() {
 	return (
 		<AppPageShell
 			title={__('Settings')}
+			description={__('Manage your plugin preferences.')}
 			breadcrump={[{ label: __('Settings') }]}
 		>
 			<SettingProvider>
-				<SettingsForm />
-				<AdBanner />
-				<AutoupdateSetting />
-				{data && data.roles && <RolesAccessForm />}
-				<AdBanner />
+				<div className="flex w-full flex-col gap-6">
+					<SettingsForm />
+					<AutoupdateSetting />
+					{data && data.roles && <RolesAccessForm />}
+					<AdBanner />
+				</div>
 			</SettingProvider>
 		</AppPageShell>
 	);

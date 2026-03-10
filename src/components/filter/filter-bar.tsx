@@ -5,27 +5,16 @@ import { Button } from '../ui/button';
 import FilterItem from './filter-item';
 import PerPage from './filter-per-page';
 import FilterSheet from './filter-sheet';
-import Search from './search-input';
 import FilterToolbar from './toolbars';
 type Props = {
 	collection: ReturnType<typeof useDataCollection>;
 };
 export default function FilterBar({ collection }: Props) {
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
-				<Search collection={collection} />
-				<div className="flex flex-row flex-wrap items-center gap-4">
-					<PerPage collection={collection} />
-					<FilterToolbar
-						label={__('Order By')}
-						collection={collection}
-					/>
-				</div>
-			</div>
-			<div className="flex flex-row flex-wrap items-center gap-4">
+		<div className="flex flex-row flex-wrap items-center justify-between gap-4">
+			<div className="flex flex-row flex-wrap items-center gap-2">
 				{collection.options && (
-					<div className="flex flex-wrap gap-4">
+					<>
 						{collection.options
 							.filter(
 								(option) =>
@@ -43,19 +32,25 @@ export default function FilterBar({ collection }: Props) {
 							})}
 						<FilterSheet collection={collection} />
 						{Object.keys(collection.filter).length > 0 && (
-							<div>
-								<Button
-									variant="ghost"
-									className="flex flex-row gap-2"
-									onClick={collection.clearFilter}
-								>
-									<span>{__('Clear Filters')}</span>{' '}
-									<X size="14" />
-								</Button>
-							</div>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="flex flex-row gap-2"
+								onClick={collection.clearFilter}
+							>
+								<span>{__('Clear Filters')}</span>{' '}
+								<X size="14" />
+							</Button>
 						)}
-					</div>
+					</>
 				)}
+			</div>
+			<div className="flex flex-row items-center gap-2">
+				<PerPage collection={collection} />
+				<FilterToolbar
+					label={__('Order By')}
+					collection={collection}
+				/>
 			</div>
 		</div>
 	);
