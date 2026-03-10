@@ -4,7 +4,7 @@ import useApiFetch from '@/hooks/use-api-fetch';
 import { __ } from '@/lib/i18n';
 import { useNavigate, useParams } from '@/router';
 import { HistoryCollectionType } from '@/types/history';
-import { useEffect } from 'react';
+import { useEffect } from '@wordpress/element';
 import HistoryItems from './_components/history-items';
 
 export default function Component() {

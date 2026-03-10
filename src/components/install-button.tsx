@@ -11,13 +11,12 @@ import {
 } from '@/components/ui/dialog';
 import useActivation from '@/hooks/use-activation';
 import useInstall from '@/hooks/use-install';
-import { __, _x } from '@/lib/i18n';
+import { __, _x, sprintf } from '@/lib/i18n';
 import { TypeToSlug } from '@/lib/type-to-slug';
 import { useNavigate, useParams } from '@/router';
 import { TPostItem, TPostMedia } from '@/types/item';
 import { useState } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
-import { sprintf } from '@wordpress/i18n';
 import {
 	CloudDownload,
 	Download,

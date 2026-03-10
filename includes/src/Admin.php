@@ -29,6 +29,7 @@ class Admin
 	{
 		add_action('admin_menu', [$this, 'admin_menu']);
 		add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts']);
+		add_action('admin_notices', [$this, 'upgrade_notice']);
 		add_action('admin_init', [$this, 'admin_init']);
 		add_filter('plugin_row_meta', [$this, 'plugin_row_meta'], 10, 4);
 		add_filter(
@@ -70,7 +71,7 @@ class Admin
 			'li#toplevel_page_' .
 			Constants::ADMIN_PAGE_ID .
 			'.menu-top:hover{ background: rgb(230,13,145);background: linear-gradient(90deg, rgba(230,13,145,1) 0%, rgba(230,13,82,1) 10%)}';
-		wp_add_inline_style('nav-menus', implode('', $css));
+		wp_add_inline_style('wp-admin', implode('', $css));
 		$js[] = "jQuery(function($){";
 		$js[] =
 			'$("li#toplevel_page_' .
@@ -429,6 +430,86 @@ class Admin
 		})();
 		</script>
 		<?php
+	}
+
+	public function upgrade_notice()
+	{
+		if (!\current_user_can('manage_options')) {
+			return;
+		}
+
+		$activation_key = \get_option(Constants::ACTIVATION_KEY);
+
+		if (empty($activation_key)) {
+			$message = __(
+				'Activate your GrootMade license to unlock downloads, auto-updates, and bulk actions.',
+				'grootmade'
+			);
+			$cta_text = __('Activate License', 'grootmade');
+			$cta_url = \admin_url(
+				'admin.php?page=' . Constants::ADMIN_PAGE_ID . '#/activation'
+			);
+		} else {
+			$detail = Helper::get_activation_detail();
+
+			if (!$detail || !is_array($detail)) {
+				return;
+			}
+
+			$download_allowed = !empty($detail['download_allowed']);
+			$plan_type = $detail['plan_type'] ?? '';
+
+			if (!$download_allowed) {
+				$message = __(
+					'Upgrade your GrootMade plan to unlock downloads, auto-updates, and premium features.',
+					'grootmade'
+				);
+				$cta_text = __('View Plans', 'grootmade');
+				$cta_url = 'https://grootmade.com/pricing';
+			} elseif (in_array($plan_type, ['recurring', 'onetime'], true)) {
+				$message = __(
+					'Go Lifetime — Upgrade to a lifetime plan for unlimited access with no recurring fees.',
+					'grootmade'
+				);
+				$cta_text = __('Upgrade', 'grootmade');
+				$cta_url = 'https://grootmade.com/pricing';
+			} else {
+				return;
+			}
+		}
+
+		$logo_url = Plugin::p_url('public/logo.svg');
+
+		echo '<style>';
+		echo '.grootmade-upgrade-notice{border:none;border-left:4px solid #2563eb;background:linear-gradient(135deg,#fff 0%,#eff6ff 100%);padding:0;margin:5px 0 15px;display:flex;align-items:stretch;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);}';
+		echo '.grootmade-upgrade-notice .grootmade-notice-logo{flex-shrink:0;width:52px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 100%);padding:12px;}';
+		echo '.grootmade-upgrade-notice .grootmade-notice-logo img{width:28px;height:28px;filter:brightness(0) invert(1);}';
+		echo '.grootmade-upgrade-notice .grootmade-notice-body{flex:1;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px;}';
+		echo '.grootmade-upgrade-notice .grootmade-notice-text{font-size:13.5px;line-height:1.5;color:#1d2327;}';
+		echo '.grootmade-upgrade-notice .grootmade-notice-text strong{color:#2563eb;}';
+		echo '.grootmade-upgrade-notice .grootmade-notice-cta{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 100%);color:#fff;text-decoration:none;border-radius:6px;font-weight:600;font-size:13px;white-space:nowrap;transition:opacity .2s,transform .2s;box-shadow:0 2px 8px rgba(37,99,235,0.3);}';
+		echo '.grootmade-upgrade-notice .grootmade-notice-cta:hover{opacity:.9;color:#fff;transform:translateY(-1px);}';
+		echo '.grootmade-upgrade-notice .grootmade-notice-cta svg{width:14px;height:14px;fill:currentColor;}';
+		echo '</style>';
+
+		$arrow =
+			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 12h14m-7-7l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+		printf(
+			'<div class="notice grootmade-upgrade-notice">' .
+				'<div class="grootmade-notice-logo"><img src="%s" alt="GrootMade"></div>' .
+				'<div class="grootmade-notice-body">' .
+				'<span class="grootmade-notice-text"><strong>GrootMade</strong> — %s</span>' .
+				'<a href="%s" class="grootmade-notice-cta" target="%s">%s %s</a>' .
+				'</div>' .
+				'</div>',
+			\esc_url($logo_url),
+			\esc_html($message),
+			\esc_url($cta_url),
+			empty($activation_key) ? '_self' : '_blank',
+			\esc_html($cta_text),
+			$arrow
+		);
 	}
 
 	public function render_page()

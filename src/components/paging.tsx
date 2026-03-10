@@ -8,9 +8,8 @@ import {
 	PaginationPrevious
 } from '@/components/ui/pagination';
 import generatePaginationArray from '@/lib/generatePaginationArray';
-import { _n } from '@/lib/i18n';
+import { _n, sprintf } from '@/lib/i18n';
 import { useMemo } from '@wordpress/element';
-import { sprintf } from '@wordpress/i18n';
 type PagingProps = {
 	totalPages: number;
 	currentPage: number;

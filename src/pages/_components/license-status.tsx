@@ -3,10 +3,9 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ActivationStatusToString } from '@/config/activation-status';
 import useActivation from '@/hooks/use-activation';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { decodeEntities } from '@wordpress/html-entities';
-import { sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { ClassNameValue } from 'tailwind-merge';
 

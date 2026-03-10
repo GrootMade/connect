@@ -14,10 +14,9 @@ import {
 	PopoverTrigger
 } from '@/components/ui/popover';
 import useDataCollection from '@/hooks/use-data-collection';
-import { __, _x } from '@/lib/i18n';
+import { __, _x, sprintf } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { PlusCircledIcon } from '@radix-ui/react-icons';
-import { sprintf } from '@wordpress/i18n';
 import { CheckIcon } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Separator } from '../ui/separator';

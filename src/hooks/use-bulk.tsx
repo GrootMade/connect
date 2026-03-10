@@ -1,5 +1,5 @@
 import { claimAfterDelay } from '@/lib/download-delay';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
 import { TApiError } from '@/types/api';
 import { EnumItemType } from '@/zod/item';
 import {
@@ -194,15 +194,27 @@ export function BulkProvider({
 		items.forEach((item) => {
 			addQueueTask(() => {
 				return new Promise((resolve, reject) => {
-					const isInstalled = list?.find(
-						(i) => Number(i.id) === Number(item.id)
-					);
-					const method = isInstalled ? 'update' : 'install';
-					notify.promise(
-						installAsync({
-							item_id: item.id,
-							method
-						}).then(async (data) => {
+					(async () => {
+						const isInstalled = list?.find(
+							(i) => Number(i.id) === Number(item.id)
+						);
+						const method = isInstalled ? 'update' : 'install';
+						const loadingMsg = isInstalled
+							? __('Updating')
+							: __('Installing');
+						const uid = notify.add(
+							loadingMsg,
+							'loading',
+							item.title
+						);
+
+						try {
+							const data = await installAsync({
+								item_id: item.id,
+								method
+							});
+
+							let result = data;
 							if (
 								data.type === 'delay' &&
 								data.delay_token &&
@@ -212,31 +224,46 @@ export function BulkProvider({
 									data.delay_token,
 									data.delay_seconds,
 									method,
-									item.id
+									item.id,
+									undefined,
+									undefined,
+									undefined,
+									(remaining) => {
+										notify.update(uid, {
+											title:
+												remaining > 0
+													? sprintf(
+															__(
+																'Waiting %d seconds...'
+															),
+															remaining
+														)
+													: loadingMsg
+										});
+									}
 								);
-								return { ...data, ...claimed };
+								result = { ...data, ...claimed };
 							}
-							return data;
-						}),
-						{
-							description: item.title,
-							loading: isInstalled
-								? __('Updating')
-								: __('Installing'),
-							success(data) {
-								resolve(data);
-								removeItem(item.id);
-								return __('Success');
-							},
-							error(err: TApiError) {
-								reject(err);
-								return err.message ?? __('Error');
-							},
-							finally() {
-								clearCache();
-							}
+
+							resolve(result);
+							removeItem(item.id);
+							notify.update(uid, {
+								title: __('Success'),
+								status: 'success'
+							});
+							clearCache();
+						} catch (err) {
+							reject(err);
+							notify.update(uid, {
+								title:
+									(err as TApiError)?.message ?? __('Error'),
+								status: 'error'
+							});
+							clearCache();
 						}
-					);
+					})().catch((err) => {
+						reject(err);
+					});
 				});
 			});
 		});

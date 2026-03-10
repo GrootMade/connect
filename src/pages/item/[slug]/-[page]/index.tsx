@@ -7,7 +7,7 @@ import { adsConfig } from '@/config/ads';
 import useApiFetch from '@/hooks/use-api-fetch';
 import useDataCollection, { FilterOption } from '@/hooks/use-data-collection';
 import useGetTerms from '@/hooks/use-get-terms';
-import { __, _n } from '@/lib/i18n';
+import { __, _n, sprintf } from '@/lib/i18n';
 import { SlugToItemType } from '@/lib/type-to-slug';
 import { cn } from '@/lib/utils';
 import PostGridItem, {
@@ -18,7 +18,6 @@ import { TPostItemCollection } from '@/types/item';
 import { EnumItemSlug } from '@/zod/item';
 import { useEffect, useMemo } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
-import { sprintf } from '@wordpress/i18n';
 import { SearchX } from 'lucide-react';
 import { z } from 'zod';
 

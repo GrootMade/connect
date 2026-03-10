@@ -8,8 +8,8 @@ import { __ } from '@/lib/i18n';
 import { useNavigate } from '@/router';
 import { CollectionResponse } from '@/types/api';
 import { BookmarkCollectionType } from '@/types/bookmark';
+import { useEffect } from '@wordpress/element';
 import { Plus } from 'lucide-react';
-import { useEffect } from 'react';
 import Collection from './_components/collection';
 
 export default function Component() {

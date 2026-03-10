@@ -1,7 +1,8 @@
 import { __ } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { Fragment, useEffect } from '@wordpress/element';
 import { Home } from 'lucide-react';
-import { Fragment, useEffect, type ElementType } from 'react';
+import type { ElementType } from 'react';
 import { Link } from 'react-router-dom';
 import AdBanner from '../ad-banner';
 import BulkAction from '../bulk-action';

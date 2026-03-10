@@ -3,9 +3,9 @@ import placeholder from '@/lib/placeholder';
 import { cn } from '@/lib/utils';
 import { Link } from '@/router';
 import { TPostItem } from '@/types/item';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
 import { Loader, Search, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { Hits, useSearchBox } from 'react-instantsearch';
 import { Input } from './ui/input';
 

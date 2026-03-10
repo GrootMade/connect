@@ -1,14 +1,13 @@
 import InstallButton from '@/components/install-button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
 import { TypeToItemType, TypeToSlug } from '@/lib/type-to-slug';
 import version_compare from '@/lib/version_compare';
 import { Link } from '@/router';
 import { TThemePluginItem } from '@/types/item';
 import { type ColumnDef } from '@tanstack/react-table';
 import { decodeEntities } from '@wordpress/html-entities';
-import { sprintf } from '@wordpress/i18n';
 import AutoUpdateSwitcher from './autoupdate-switch';
 
 export function getColumns(): ColumnDef<TThemePluginItem>[] {

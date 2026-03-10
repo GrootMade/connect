@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from '@wordpress/element';
 
 export type StackedBarChartDataType = {
 	name: string;

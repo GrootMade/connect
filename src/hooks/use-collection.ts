@@ -1,5 +1,5 @@
 import useApiMutation from '@/hooks/use-api-mutation';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
 import { CollectionResponse, TApiError } from '@/types/api';
 import { BookmarkCollectionType } from '@/types/bookmark';
 import { TPostItem } from '@/types/item';
@@ -10,7 +10,6 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
-import { sprintf } from '@wordpress/i18n';
 import { z } from 'zod';
 import useActivation from './use-activation';
 import useApiFetch from './use-api-fetch';

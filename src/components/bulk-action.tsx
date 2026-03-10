@@ -10,9 +10,9 @@ import {
 } from '@/components/ui/dialog';
 import useActivation from '@/hooks/use-activation';
 import useBulk from '@/hooks/use-bulk';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
+import { memo } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
-import { sprintf } from '@wordpress/i18n';
 import {
 	Download,
 	DownloadCloud,
@@ -21,7 +21,6 @@ import {
 	Trash2,
 	X
 } from 'lucide-react';
-import { memo } from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';

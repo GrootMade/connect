@@ -1,5 +1,5 @@
 import { claimAfterDelay } from '@/lib/download-delay';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
 import VersionCompare from '@/lib/version_compare';
 import { useNavigate } from '@/router';
 import { TApiError } from '@/types/api';
@@ -7,7 +7,6 @@ import { TPostItem, TPostMedia } from '@/types/item';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from '@wordpress/element';
 import { decodeEntities } from '@wordpress/html-entities';
-import { sprintf } from '@wordpress/i18n';
 import useActivation from './use-activation';
 import useApiMutation from './use-api-mutation';
 import useDownload from './use-download';
@@ -106,24 +105,41 @@ export default function useInstall() {
 	const installItem = useCallback(
 		(item: TPostItem, media: TPostMedia) =>
 			new Promise<PluginInstallResponse>((resolve, reject) => {
-				if (!checkActivation()) {
-					reject(__('License not activated'));
-				}
-				if (!can_install) {
-					reject(__('Installation not allowed'));
-					notify.error(__('Installation not allowed'));
-				}
-				const is_rollback = isRollBack(item, media);
-				const installed = isInstalled(item);
-				const is_new = isNewerVersion(item);
-				const method = installed ? 'update' : 'install';
-				notify.promise(
-					installPlugin({
-						item_id: item.id,
-						method,
-						media_id: media?.id,
-						slug: installed?.slug
-					}).then(async (data) => {
+				(async () => {
+					if (!checkActivation()) {
+						return reject(__('License not activated'));
+					}
+					if (!can_install) {
+						notify.error(__('Installation not allowed'));
+						return reject(__('Installation not allowed'));
+					}
+					const is_rollback = isRollBack(item, media);
+					const installed = isInstalled(item);
+					const is_new = isNewerVersion(item);
+					const method = installed ? 'update' : 'install';
+					const loadingMsg = is_rollback
+						? sprintf(__('Roll-Back to version %s'), media?.version)
+						: installed
+							? is_new
+								? __('Updating')
+								: __('Re-Installing')
+							: __('Installing');
+
+					const uid = notify.add(
+						loadingMsg,
+						'loading',
+						decodeEntities(item.title)
+					);
+
+					try {
+						const data = await installPlugin({
+							item_id: item.id,
+							method,
+							media_id: media?.id,
+							slug: installed?.slug
+						});
+
+						let result = data;
 						if (
 							data.type === 'delay' &&
 							data.delay_token &&
@@ -135,38 +151,41 @@ export default function useInstall() {
 								method,
 								item.id,
 								installed?.slug,
-								media?.id
+								media?.id,
+								undefined,
+								(remaining) => {
+									notify.update(uid, {
+										title:
+											remaining > 0
+												? sprintf(
+														__(
+															'Waiting %d seconds...'
+														),
+														remaining
+													)
+												: loadingMsg
+									});
+								}
 							);
-							return {
-								...data,
-								...claimed
-							};
+							result = { ...data, ...claimed };
 						}
-						return data;
-					}),
-					{
-						description: decodeEntities(item.title),
-						loading: is_rollback
-							? sprintf(
-									__('Roll-Back to version %s'),
-									media?.version
-								)
-							: installed
-								? is_new
-									? __('Updating')
-									: __('Re-Installing')
-								: __('Installing'),
-						success(data) {
-							clearCache();
-							resolve(data);
-							return __('Successful');
-						},
-						error(err: TApiError) {
-							reject(err);
-							return err.message;
-						}
+
+						clearCache();
+						notify.update(uid, {
+							title: __('Successful'),
+							status: 'success'
+						});
+						resolve(result);
+					} catch (err) {
+						notify.update(uid, {
+							title: (err as TApiError)?.message ?? __('Error'),
+							status: 'error'
+						});
+						reject(err);
 					}
-				);
+				})().catch((err) => {
+					reject(err);
+				});
 			}),
 		[
 			checkActivation,
@@ -182,19 +201,29 @@ export default function useInstall() {
 	const downloadItem = useCallback(
 		(item: TPostItem, media?: TPostMedia) =>
 			new Promise<PluginInstallResponse>((resolve, reject) => {
-				if (!checkActivation()) {
-					reject(__('License not activated'));
-				}
-				if (!can_download) {
-					reject(__('Download not allowed'));
-					notify.error(__('Download not allowed'));
-				}
-				notify.promise(
-					installPlugin({
-						item_id: item.id,
-						method: 'download',
-						media_id: media?.id
-					}).then(async (data) => {
+				(async () => {
+					if (!checkActivation()) {
+						return reject(__('License not activated'));
+					}
+					if (!can_download) {
+						notify.error(__('Download not allowed'));
+						return reject(__('Download not allowed'));
+					}
+
+					const uid = notify.add(
+						__('Downloading'),
+						'loading',
+						decodeEntities(item.title)
+					);
+
+					try {
+						const data = await installPlugin({
+							item_id: item.id,
+							method: 'download',
+							media_id: media?.id
+						});
+
+						let result = data;
 						if (
 							data.type === 'delay' &&
 							data.delay_token &&
@@ -206,34 +235,53 @@ export default function useInstall() {
 								'download',
 								item.id,
 								undefined,
-								media?.id
+								media?.id,
+								undefined,
+								(remaining) => {
+									notify.update(uid, {
+										title:
+											remaining > 0
+												? sprintf(
+														__(
+															'Waiting %d seconds...'
+														),
+														remaining
+													)
+												: __('Downloading')
+									});
+								}
 							);
-							return {
+							result = {
 								...data,
 								link: claimed.link,
 								filename: claimed.filename
 							};
 						}
-						return data;
-					}),
-					{
-						description: decodeEntities(item.title),
-						loading: __('Downloading'),
-						success(data) {
-							clearCache();
-							resolve(data);
-							if (data.link && data.filename) {
-								addDownloadTask(data.link, data.filename);
-								return __('Added item to download queue.');
-							}
-							return __('Error Initiating Download');
-						},
-						error(err: TApiError) {
-							reject(err);
-							return err.message;
+
+						clearCache();
+						if (result.link && result.filename) {
+							addDownloadTask(result.link, result.filename);
+							notify.update(uid, {
+								title: __('Added item to download queue.'),
+								status: 'success'
+							});
+						} else {
+							notify.update(uid, {
+								title: __('Error Initiating Download'),
+								status: 'error'
+							});
 						}
+						resolve(result);
+					} catch (err) {
+						notify.update(uid, {
+							title: (err as TApiError)?.message ?? __('Error'),
+							status: 'error'
+						});
+						reject(err);
 					}
-				);
+				})().catch((err) => {
+					reject(err);
+				});
 			}),
 		[
 			addDownloadTask,

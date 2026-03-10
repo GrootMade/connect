@@ -15,12 +15,11 @@ import {
 	PopoverTrigger
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { Option } from '@/types/data-table';
 import { CheckIcon, PlusCircledIcon } from '@radix-ui/react-icons';
 import { type Column } from '@tanstack/react-table';
-import { sprintf } from '@wordpress/i18n';
 
 interface DataTableFacetedFilterProps<TData, TValue> {
 	column?: Column<TData, TValue>;

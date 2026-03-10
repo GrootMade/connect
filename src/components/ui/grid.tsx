@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId } from '@wordpress/element';
 
 export const Grid = ({
 	pattern,

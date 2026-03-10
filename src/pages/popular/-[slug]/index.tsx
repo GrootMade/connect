@@ -1,13 +1,12 @@
 import AdBanner from '@/components/ad-banner';
 import { AppPageShell } from '@/components/body/page-shell';
 import useApiFetch from '@/hooks/use-api-fetch';
-import { _x } from '@/lib/i18n';
+import { _x, sprintf } from '@/lib/i18n';
 import { SlugToItemType } from '@/lib/type-to-slug';
 import PostGridItem from '@/pages/item/[slug]/-[page]/_components/PostGridItem';
 import { useParams } from '@/router';
 import { TPostItemCollection } from '@/types/item';
 import { EnumItemSlug } from '@/zod/item';
-import { sprintf } from '@wordpress/i18n';
 
 export default function Component() {
 	const { slug: _slug } = useParams('/popular/:slug?');

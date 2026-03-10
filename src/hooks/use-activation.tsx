@@ -1,8 +1,8 @@
 import { __ } from '@/lib/i18n';
 import { TActivationDetail } from '@/types/license';
 import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo } from '@wordpress/element';
 import { Ban } from 'lucide-react';
-import { useCallback, useEffect, useMemo } from 'react';
 import useApiFetch from './use-api-fetch';
 import useApiMutation from './use-api-mutation';
 import useNotice from './use-notice';

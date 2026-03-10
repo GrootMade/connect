@@ -14,9 +14,12 @@ import {
 } from '@/components/ui/tooltip';
 import useSidebar, { NavItem } from '@/hooks/use-sidebar';
 import { cn, isLinkActive } from '@/lib/utils';
+import { memo, useMemo } from '@wordpress/element';
 import { type VariantProps } from 'class-variance-authority';
 import { ChevronDown, ExternalLinkIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import BulkAction from '../bulk-action';
+import ModeToggle from '../mode-toggle';
 
 type LinkStyleProps = {
 	active?: boolean;
@@ -36,8 +39,6 @@ function linkStyle({ active, disabled, className, ...props }: LinkStyleProps) {
 		className
 	);
 }
-
-import { useMemo } from 'react'; // Add this import at the top
 
 export function SidebarNav() {
 	const isCollapsed = false;
@@ -231,10 +232,6 @@ type NavLinkProps = NavItem & {
 	isCollapsed?: boolean;
 	size?: ButtonProps['size'];
 };
-
-import { memo } from 'react'; // Add this import at the top
-import BulkAction from '../bulk-action';
-import ModeToggle from '../mode-toggle';
 
 function NavLink({
 	href,

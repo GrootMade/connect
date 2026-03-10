@@ -1,11 +1,14 @@
 import { siteConfig } from '@/config/site';
 import {
+	sprintf,
 	__ as wp__,
 	_n as wp_n,
 	_nx as wp_nx,
 	_x as wp_x
 } from '@wordpress/i18n';
 import ISO6391 from 'iso-639-1';
+
+export { sprintf };
 
 /**
  * Retrieve the translation of text.

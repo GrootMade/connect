@@ -1,5 +1,5 @@
 import { TItemTypeEnum, TTerm, TTermCollectionResponse } from '@/types/item';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from '@wordpress/element';
 import useApiFetch from './use-api-fetch';
 
 export default function useGetTerms(type: TItemTypeEnum) {

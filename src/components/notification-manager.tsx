@@ -1,3 +1,5 @@
+import { siteConfig } from '@/config/site';
+import useActivation from '@/hooks/use-activation';
 import useNotification, {
 	type NotificationItem
 } from '@/hooks/use-notification';
@@ -5,10 +7,12 @@ import { __ } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { useState } from '@wordpress/element';
 import {
+	ArrowUpRight,
 	Bell,
 	CheckCircle,
 	ChevronDown,
 	ChevronUp,
+	CrownIcon,
 	Info,
 	Loader2,
 	X,
@@ -54,6 +58,32 @@ function NotificationItemRow({ item }: { item: NotificationItem }) {
 				<X className="size-3.5" />
 			</Button>
 		</div>
+	);
+}
+
+function NotificationUpgradeBanner() {
+	const { data, activated, active } = useActivation();
+	const delaySeconds = data?.download_delay_seconds ?? 0;
+
+	if (!activated || !active || delaySeconds <= 0) return null;
+
+	return (
+		<a
+			href={`${siteConfig.provider}/pricing`}
+			target="_blank"
+			rel="noopener noreferrer"
+			className="flex items-center gap-2 border-b bg-amber-500/10 px-3 py-2 no-underline transition-colors hover:bg-amber-500/15"
+		>
+			<CrownIcon className="size-3.5 shrink-0 text-amber-500" />
+			<span className="flex-1 text-xs text-muted-foreground">
+				<strong className="font-medium text-foreground">
+					{__('Skip the wait')}
+				</strong>
+				{' — '}
+				{__('Upgrade to remove download delays.')}
+			</span>
+			<ArrowUpRight className="size-3 shrink-0 text-muted-foreground" />
+		</a>
 	);
 }
 
@@ -116,6 +146,7 @@ export default function NotificationManager() {
 			{/* Items */}
 			{!collapsed && (
 				<>
+					{hasActive && <NotificationUpgradeBanner />}
 					<div className="max-h-72 divide-y divide-border overflow-y-auto">
 						{notifications.map((item) => (
 							<NotificationItemRow

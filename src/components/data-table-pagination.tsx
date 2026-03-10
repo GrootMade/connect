@@ -6,7 +6,7 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select';
-import { __, _n } from '@/lib/i18n';
+import { __, _n, sprintf } from '@/lib/i18n';
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -14,7 +14,6 @@ import {
 	DoubleArrowRightIcon
 } from '@radix-ui/react-icons';
 import { type Table } from '@tanstack/react-table';
-import { sprintf } from '@wordpress/i18n';
 
 interface DataTablePaginationProps<TData> {
 	table: Table<TData>;

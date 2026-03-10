@@ -89,18 +89,32 @@ export async function claimAfterDelay(
 	itemId: number | string,
 	slug?: string,
 	mediaId?: number,
-	signal?: AbortSignal
+	signal?: AbortSignal,
+	onTick?: (remaining: number) => void
 ): Promise<ClaimResponse> {
-	await new Promise<void>((resolve, reject) => {
-		const timeout = setTimeout(resolve, seconds * 1000);
-
-		signal?.addEventListener('abort', () => {
-			clearTimeout(timeout);
-			reject(
-				new DOMException(__('Download delay aborted'), 'AbortError')
+	for (let remaining = seconds; remaining > 0; remaining--) {
+		if (signal?.aborted) {
+			throw new DOMException(__('Download delay aborted'), 'AbortError');
+		}
+		onTick?.(remaining);
+		await new Promise<void>((resolve, reject) => {
+			const timeout = setTimeout(resolve, 1000);
+			signal?.addEventListener(
+				'abort',
+				() => {
+					clearTimeout(timeout);
+					reject(
+						new DOMException(
+							__('Download delay aborted'),
+							'AbortError'
+						)
+					);
+				},
+				{ once: true }
 			);
 		});
-	});
+	}
+	onTick?.(0);
 
 	return claimDownload(token, method, itemId, slug, mediaId, signal);
 }

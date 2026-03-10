@@ -4,7 +4,7 @@ import useActivation from '@/hooks/use-activation';
 import useInstalled from '@/hooks/use-is-installed';
 import { __ } from '@/lib/i18n';
 import { useNavigate } from '@/router';
-import { useEffect } from 'react';
+import { useEffect } from '@wordpress/element';
 import PendingInstallsCard from './_components/pending-installs-card';
 import UpdatesTable, {
 	UpdatesTableSkeleton

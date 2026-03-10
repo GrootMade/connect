@@ -15,12 +15,11 @@ import { PluginInstallResponse } from '@/hooks/use-install';
 import useInstalled from '@/hooks/use-is-installed';
 import useNotification from '@/hooks/use-notification';
 import { claimAfterDelay } from '@/lib/download-delay';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
 import { useNavigate } from '@/router';
 import { TApiError } from '@/types/api';
 import { TDemoContent, TPostItem } from '@/types/item';
 import { decodeEntities } from '@wordpress/html-entities';
-import { sprintf } from '@wordpress/i18n';
 import { CloudDownload, Download, Loader } from 'lucide-react';
 type AdditionalContentDownloadSchema = {
 	item_id: number | string;
@@ -46,16 +45,26 @@ export default function AdditionalDownloadButton({
 		);
 
 	const { clearCache } = useInstalled();
-	function download() {
+	async function download() {
 		if (typeof activation?.plan_type == 'undefined') {
 			notify.error(__('License not activated'));
 			navigate('/activation');
 			return;
 		}
-		const promise = downloadAdditional({
-			item_id: item.id,
-			media_id: media.id
-		}).then(async (data) => {
+
+		const uid = notify.add(
+			__('Downloading'),
+			'loading',
+			decodeEntities(media.title)
+		);
+
+		try {
+			const data = await downloadAdditional({
+				item_id: item.id,
+				media_id: media.id
+			});
+
+			let result = data;
 			if (
 				data.type === 'delay' &&
 				data.delay_token &&
@@ -67,32 +76,42 @@ export default function AdditionalDownloadButton({
 					'download',
 					item.id,
 					undefined,
-					media.id
+					media.id,
+					undefined,
+					(remaining) => {
+						notify.update(uid, {
+							title:
+								remaining > 0
+									? sprintf(
+											__('Waiting %d seconds...'),
+											remaining
+										)
+									: __('Downloading')
+						});
+					}
 				);
-				return {
+				result = {
 					...data,
 					link: claimed.link,
 					filename: claimed.filename
 				};
 			}
-			return data;
-		});
-		notify.promise(promise, {
-			description: decodeEntities(media.title),
-			loading: __('Downloading'),
-			success(data) {
-				if (data.link) {
-					window.open(data.link, '_blank');
-				}
-				return __('Successful');
-			},
-			error(err: TApiError) {
-				return err.message;
-			},
-			finally() {
-				clearCache();
+
+			if (result.link) {
+				window.open(result.link, '_blank');
 			}
-		});
+			notify.update(uid, {
+				title: __('Successful'),
+				status: 'success'
+			});
+			clearCache();
+		} catch (err) {
+			notify.update(uid, {
+				title: (err as TApiError)?.message ?? __('Error'),
+				status: 'error'
+			});
+			clearCache();
+		}
 	}
 	return (
 		<Dialog>

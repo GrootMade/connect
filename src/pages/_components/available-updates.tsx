@@ -5,11 +5,10 @@ import {
 	CardHeader
 } from '@/components/ui/card';
 import useInstalled from '@/hooks/use-is-installed';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
 import { TypeToSlug } from '@/lib/type-to-slug';
 import { cn } from '@/lib/utils';
 import { Link } from '@/router';
-import { sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { ClassNameValue } from 'tailwind-merge';
 

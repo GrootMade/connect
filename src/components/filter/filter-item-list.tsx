@@ -8,8 +8,9 @@ import {
 import useDataCollection from '@/hooks/use-data-collection';
 import { __ } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { useCallback, useMemo, useRef, useState } from '@wordpress/element';
 import { CheckIcon, X } from 'lucide-react';
-import { KeyboardEvent, useCallback, useMemo, useRef, useState } from 'react';
+import type { KeyboardEvent } from 'react';
 import { Badge } from '../ui/badge';
 type ArrayItemType<T, K extends keyof T> = T[K] extends (infer U)[] ? U : never;
 type Item = ArrayItemType<ReturnType<typeof useDataCollection>, 'options'>;

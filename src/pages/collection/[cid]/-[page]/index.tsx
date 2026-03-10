@@ -2,7 +2,7 @@ import AdBanner from '@/components/ad-banner';
 import { AppPageShell } from '@/components/body/page-shell';
 import Paging from '@/components/paging';
 import useApiFetch from '@/hooks/use-api-fetch';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
 import PostGridItem from '@/pages/item/[slug]/-[page]/_components/PostGridItem';
 import { useParams } from '@/router';
 import { CollectionResponse } from '@/types/api';
@@ -12,7 +12,6 @@ import {
 	BookmarkCollectionType
 } from '@/types/bookmark';
 import { decodeEntities } from '@wordpress/html-entities';
-import { sprintf } from '@wordpress/i18n';
 
 export default function CollectionDetail() {
 	const { cid, page = 1 } = useParams('/collection/:cid/:page?');
