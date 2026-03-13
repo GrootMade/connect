@@ -10,6 +10,7 @@ type AdTier = 'free' | 'pro' | 'lifetime';
 function useAdTier(): AdTier {
 	const { activated, active, data } = useActivation();
 	if (!activated || !active || !data?.download_allowed) return 'free';
+	if (data?.gold) return 'lifetime';
 	if (data?.plan_type === 'recurring' || data?.plan_type === 'onetime')
 		return 'pro';
 	return 'lifetime';

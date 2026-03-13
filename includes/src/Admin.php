@@ -458,6 +458,7 @@ class Admin
 
 			$download_allowed = !empty($detail['download_allowed']);
 			$plan_type = $detail['plan_type'] ?? '';
+			$is_gold = !empty($detail['gold']);
 
 			if (!$download_allowed) {
 				$message = __(
@@ -466,6 +467,8 @@ class Admin
 				);
 				$cta_text = __('View Plans', 'grootmade');
 				$cta_url = 'https://grootmade.com/pricing';
+			} elseif ($is_gold) {
+				return;
 			} elseif (in_array($plan_type, ['recurring', 'onetime'], true)) {
 				$message = __(
 					'Go Lifetime — Upgrade to a lifetime plan for unlimited access with no recurring fees.',
