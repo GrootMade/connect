@@ -15,6 +15,16 @@ class PendingInstall extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'create' => [
+				'methods' => 'POST',
+				'callback' => [$this, 'check_now'],
+				'permission_callback' => [$this, 'user_can_install'],
+			],
+			'read' => [
+				'methods' => 'GET',
+				'callback' => [$this, 'get_status'],
+				'permission_callback' => [$this, 'user_can_install'],
+			],
 			'check-now' => [
 				'methods' => 'POST',
 				'callback' => [$this, 'check_now'],

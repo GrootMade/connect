@@ -5,6 +5,7 @@ import {
 	ChartTooltipContent
 } from '@/components/ui/chart';
 import useApiFetch from '@/hooks/use-api-fetch';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { ItemStatsResponse } from '@/types/item';
@@ -17,6 +18,8 @@ import { ClassNameValue } from 'tailwind-merge';
 
 type Props = {
 	className?: ClassNameValue;
+	/** Tighter layout for bento / dashboard cells */
+	variant?: 'default' | 'compact';
 };
 
 const chartConfig = {
@@ -34,8 +37,12 @@ const chartConfig = {
 	}
 } satisfies ChartConfig;
 
-export default function OverviewStats({ className }: Props) {
-	const { data } = useApiFetch<ItemStatsResponse>('item/stats');
+export default function OverviewStats({
+	className,
+	variant = 'default'
+}: Props) {
+	const compact = variant === 'compact';
+	const { data } = useApiFetch<ItemStatsResponse>(API.item.readStats);
 
 	const chartData = useMemo(() => {
 		if (!data) return [];
@@ -82,14 +89,20 @@ export default function OverviewStats({ className }: Props) {
 	return (
 		<div
 			className={cn(
-				'grid grid-cols-1 gap-5 lg:grid-cols-[1fr_auto] lg:gap-7',
+				'grid grid-cols-1 lg:grid-cols-[1fr_auto]',
+				compact ? 'gap-4 lg:gap-5' : 'gap-5 lg:gap-7',
 				className
 			)}
 		>
 			{/* Stat Cards */}
 			<div className="flex flex-col justify-center gap-4">
 				<div>
-					<div className="text-4xl font-bold">
+					<div
+						className={cn(
+							'font-bold',
+							compact ? 'text-3xl sm:text-4xl' : 'text-4xl'
+						)}
+					>
 						<CountUp
 							start={0}
 							end={data?.total ?? 0}
@@ -138,7 +151,9 @@ export default function OverviewStats({ className }: Props) {
 			<div className="flex items-center justify-center">
 				<ChartContainer
 					config={chartConfig}
-					className="h-[180px] w-[180px]"
+					className={cn(
+						compact ? 'h-[150px] w-[150px]' : 'h-[180px] w-[180px]'
+					)}
 				>
 					<PieChart>
 						<ChartTooltip
@@ -149,8 +164,8 @@ export default function OverviewStats({ className }: Props) {
 							data={chartData}
 							dataKey="value"
 							nameKey="name"
-							innerRadius={50}
-							outerRadius={80}
+							innerRadius={compact ? 42 : 50}
+							outerRadius={compact ? 68 : 80}
 							strokeWidth={3}
 							stroke="var(--background)"
 						>

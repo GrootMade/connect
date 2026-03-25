@@ -7,6 +7,10 @@ class Announcement extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'read' => [
+				'methods' => 'POST',
+				'callback' => [$this, 'latest'],
+			],
 			'latest' => [
 				'methods' => 'POST',
 				'callback' => [$this, 'latest'],

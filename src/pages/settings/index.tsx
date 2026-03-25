@@ -1,5 +1,6 @@
 import AdBanner from '@/components/ad-banner';
 import { AppPageShell } from '@/components/body/page-shell';
+import { MarketingSlot } from '@/components/page/marketing-slot';
 import useActivation from '@/hooks/use-activation';
 import { SettingProvider } from '@/hooks/use-setting';
 import { __ } from '@/lib/i18n';
@@ -12,15 +13,19 @@ export default function Component() {
 	return (
 		<AppPageShell
 			title={__('Settings')}
-			description={__('Manage your plugin preferences.')}
+			description={__(
+				'General behavior, automatic updates, and who can access GrootMade.'
+			)}
 			breadcrump={[{ label: __('Settings') }]}
 		>
 			<SettingProvider>
-				<div className="flex w-full flex-col gap-6">
+				<div className="gm-reveal-stagger flex w-full flex-col gap-8 sm:gap-10">
 					<SettingsForm />
 					<AutoupdateSetting />
-					{data && data.roles && <RolesAccessForm />}
-					<AdBanner />
+					{data && data.roles ? <RolesAccessForm /> : null}
+					<MarketingSlot>
+						<AdBanner />
+					</MarketingSlot>
 				</div>
 			</SettingProvider>
 		</AppPageShell>

@@ -23,6 +23,9 @@ class Pack extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'create' => [
+				'callback' => [$this, 'download_pack'],
+			],
 			'download' => [
 				'callback' => [$this, 'download_pack'],
 			],

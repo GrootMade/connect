@@ -1,3 +1,4 @@
+import { API } from '@/lib/api-endpoints';
 import { claimAfterDelay } from '@/lib/download-delay';
 import { __, sprintf } from '@/lib/i18n';
 import { TApiError } from '@/types/api';
@@ -105,11 +106,11 @@ export function BulkProvider({
 	const { mutateAsync: installAsync } = useApiMutation<
 		PluginInstallResponse,
 		PluginInstallSchema
-	>('item/install');
+	>(API.item.update);
 	const { mutateAsync: packDownloadAsync } = useApiMutation<
 		PackDownloadResponse,
 		PackDownloadRequest
-	>('pack/download');
+	>(API.pack.create);
 	useEffect(() => {
 		const parsed = itemsSchema.safeParse(items);
 		if (parsed.success) {

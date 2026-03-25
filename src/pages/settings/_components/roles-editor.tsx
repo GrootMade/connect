@@ -11,27 +11,29 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import useApiFetch from '@/hooks/use-api-fetch';
 import useSetting from '@/hooks/use-setting';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 
 export default function RolesAccessForm() {
 	const { setSetting, settings, updateSettings } = useSetting();
 	const { data: roles } = useApiFetch<Record<string, string>>(
-		'setting/roles',
+		API.setting.readRoles,
 		{},
 		!!settings
 	);
 
 	return (
 		!!settings && (
-			<Card>
-				<CardHeader>
-					<CardTitle>{__('Role Access')}</CardTitle>
+			<Card className="overflow-hidden">
+				<CardHeader className="border-b border-border/80 bg-muted/30">
+					<CardTitle className="text-base font-semibold">
+						{__('Role Access')}
+					</CardTitle>
 					<CardDescription>
 						{__('Grant access to user roles beyond administrator.')}
 					</CardDescription>
 				</CardHeader>
-				<Separator />
-				<CardContent>
+				<CardContent className="pt-6">
 					{roles && (
 						<div className="flex flex-col">
 							{Object.entries(roles).map(

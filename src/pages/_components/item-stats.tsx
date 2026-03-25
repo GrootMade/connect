@@ -1,11 +1,12 @@
 import useApiFetch from '@/hooks/use-api-fetch';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { ItemStatsResponse } from '@/types/item';
 import { Drum, Grid2X2, Palette, ToyBrick } from 'lucide-react';
 import ItemCard from './item-card';
 
 export default function ItemStats() {
-	const { data } = useApiFetch<ItemStatsResponse>('item/stats');
+	const { data } = useApiFetch<ItemStatsResponse>(API.item.readStats);
 	return (
 		<div className="grid grid-cols-2 gap-5 md:grid-cols-2 lg:gap-7">
 			<ItemCard

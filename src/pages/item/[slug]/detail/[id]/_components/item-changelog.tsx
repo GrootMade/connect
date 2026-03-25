@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import useApiFetch from '@/hooks/use-api-fetch';
 import useInstall from '@/hooks/use-install';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { useParams } from '@/router';
 import { TPostChangelogCollection, TPostItem, TPostMedia } from '@/types/item';
@@ -85,7 +86,7 @@ export default function ItemChangeLog({ item }: Props) {
 	const [searchParams] = useSearchParams();
 	const page = pageSchema.parse(Number(searchParams?.get('page') ?? 1));
 	const { data, isLoading, isFetching } =
-		useApiFetch<TPostChangelogCollection>('item/changelog', {
+		useApiFetch<TPostChangelogCollection>(API.item.changelog, {
 			item_id: params.id,
 			page
 		});

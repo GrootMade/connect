@@ -1,5 +1,9 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import useApiFetch from '@/hooks/use-api-fetch';
+import { API } from '@/lib/api-endpoints';
+import { archiveItemCoverSrc } from '@/lib/archive-item-cover';
 import { __ } from '@/lib/i18n';
 import { TypeToItemType } from '@/lib/type-to-slug';
 import { cn } from '@/lib/utils';
@@ -18,11 +22,12 @@ type Props = {
 
 export default function PopularItems({ type, className }: Props) {
 	const { data, isLoading } = useApiFetch<TPostItemCollection>(
-		`popular/${type}`
+		type === 'theme' ? API.popular.readThemes : API.popular.readPlugins
 	);
 	const itemType = TypeToItemType(type as TItemTypeEnum);
 	const label =
 		type === 'theme' ? __('Popular Themes') : __('Popular Plugins');
+	const badgeLabel = type === 'theme' ? __('Theme') : __('Plugin');
 
 	return (
 		<Card className={cn('flex flex-col', className)}>
@@ -62,11 +67,30 @@ export default function PopularItems({ type, className }: Props) {
 									id: item.id,
 									slug: itemType?.slug ?? type
 								}}
-								className="flex items-center px-4 py-3 text-card-foreground no-underline transition-colors hover:bg-muted/50"
+								className="flex items-center gap-3 px-4 py-3 text-card-foreground no-underline transition-colors hover:bg-muted/50"
 							>
+								<Avatar className="h-9 w-9 rounded-md">
+									<AvatarImage
+										src={archiveItemCoverSrc(item)}
+										alt={decodeEntities(item.title)}
+									/>
+									<AvatarFallback>
+										{decodeEntities(item.title)
+											.slice(0, 1)
+											.toUpperCase()}
+									</AvatarFallback>
+								</Avatar>
 								<div className="min-w-0 flex-1">
-									<div className="truncate text-sm font-medium">
-										{decodeEntities(item.title)}
+									<div className="flex items-center gap-2">
+										<div className="truncate text-sm font-medium">
+											{decodeEntities(item.title)}
+										</div>
+										<Badge
+											variant="secondary"
+											className="text-[10px]"
+										>
+											{badgeLabel}
+										</Badge>
 									</div>
 									<div className="flex items-center gap-3 text-xs text-muted-foreground">
 										{item.version && (

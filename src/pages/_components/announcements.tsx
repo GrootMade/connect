@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import useApiFetch from '@/hooks/use-api-fetch';
+import { API } from '@/lib/api-endpoints';
 import { __, sprintf } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { AnnouncementItemType } from '@/types/announcement';
@@ -8,31 +9,73 @@ import { ClassNameValue } from 'tailwind-merge';
 
 type Props = {
 	className?: ClassNameValue;
+	variant?: 'default' | 'compact';
 };
-export default function Announcements({ className }: Props) {
+
+const COMPACT_MAX_ITEMS = 3;
+
+export default function Announcements({
+	className,
+	variant = 'default'
+}: Props) {
 	const { data: announcements } = useApiFetch<AnnouncementItemType[]>(
-		'announcement/latest'
+		API.announcement.read
 	);
+	const compact = variant === 'compact';
+	const list =
+		compact && announcements?.length
+			? announcements.slice(0, COMPACT_MAX_ITEMS)
+			: announcements;
+
 	return (
-		<Card className={cn('flex flex-col ', className)}>
-			<CardHeader className="flex flex-row items-center justify-between space-y-0 border-b">
-				<h3 className="text-lg">{__('Announcements')}</h3>
+		<Card
+			className={cn('flex min-h-0 flex-col overflow-hidden', className)}
+		>
+			<CardHeader
+				className={cn(
+					'flex shrink-0 flex-row items-center justify-between space-y-0 border-b border-border/80 bg-muted/30',
+					compact ? 'py-2.5' : 'py-4'
+				)}
+			>
+				<h3
+					className={cn(
+						'font-heading font-semibold tracking-tight',
+						compact ? 'text-sm' : 'text-base'
+					)}
+				>
+					{__('Announcements')}
+				</h3>
 				<a
 					href="https://meta.Grootmade.com/c/announcements/11"
 					target="_blank"
-					className="border-b border-dashed border-primary text-sm text-primary"
+					className={cn(
+						'font-medium text-primary underline-offset-4 hover:underline',
+						compact ? 'text-xs' : 'text-sm'
+					)}
 					rel="noreferrer"
 				>
 					{__('View All')}
 				</a>
 			</CardHeader>
-			<CardContent>
-				{announcements && announcements?.length > 0 ? (
+			<CardContent
+				className={cn(
+					'min-h-0 flex-1 overflow-y-auto',
+					compact
+						? 'pb-4 pt-3'
+						: 'pb-6 pt-4 lg:max-h-[min(26rem,50vh)]'
+				)}
+			>
+				{list && list.length > 0 ? (
 					<div className="flex flex-col divide-y">
-						{announcements?.map((item) => (
+						{list.map((item) => (
 							<div
 								key={item.id}
-								className="flex flex-col justify-between gap-2 py-4 text-sm first:pt-0 last:pb-0 lg:flex-row"
+								className={cn(
+									'flex flex-col justify-between gap-1 first:pt-0 last:pb-0 lg:flex-row lg:items-center',
+									compact
+										? 'py-2.5 text-xs sm:text-sm'
+										: 'gap-2 py-4 text-sm'
+								)}
 							>
 								<div>
 									<a
@@ -44,7 +87,12 @@ export default function Announcements({ className }: Props) {
 										{item.title}
 									</a>
 								</div>
-								<div className="whitespace-nowrap text-muted-foreground">
+								<div
+									className={cn(
+										'whitespace-nowrap text-muted-foreground',
+										compact && 'text-[11px] sm:text-xs'
+									)}
+								>
 									{sprintf(
 										__('Updated %s'),
 										moment(item.last_posted_at).fromNow()
@@ -54,7 +102,12 @@ export default function Announcements({ className }: Props) {
 						))}
 					</div>
 				) : (
-					<div className="text-center text-sm italic text-muted-foreground">
+					<div
+						className={cn(
+							'text-center italic text-muted-foreground',
+							compact ? 'text-xs' : 'text-sm'
+						)}
+					>
 						{__('No new announcements')}
 					</div>
 				)}

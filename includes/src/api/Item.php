@@ -88,6 +88,23 @@ class Item extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'read/list' => [
+				'callback' => [$this, 'items'],
+			],
+			'read/detail' => [
+				'callback' => [$this, 'detail'],
+			],
+			'read/stats' => [
+				'callback' => [$this, 'stats'],
+			],
+			'create' => [
+				'callback' => [$this, 'install'],
+				'permission_callback' => [$this, 'user_can_install'],
+			],
+			'update' => [
+				'callback' => [$this, 'install'],
+				'permission_callback' => [$this, 'user_can_install'],
+			],
 			'list' => [
 				'callback' => [$this, 'items'],
 			],
@@ -296,6 +313,9 @@ class Item extends ApiBase
 	public function items(\WP_REST_Request $request)
 	{
 		$type = $request->get_param('type');
+		if (is_string($type) && $type === 'theme,plugin') {
+			return $this->items_merged_themes_plugins($request);
+		}
 		$page = $request->get_param('page');
 		$keyword = $request->get_param('keyword');
 		$filter = $request->get_param('filter');
@@ -309,6 +329,272 @@ class Item extends ApiBase
 			'sort' => $sort,
 			'per_page' => $per_page,
 		]);
+	}
+
+	/**
+	 * Browse-all catalog: engine list API expects a single type. Merge theme + plugin
+	 * streams with the same sort as the engine uses per type (stream merge + offset slice).
+	 *
+	 * @return array|\WP_Error
+	 */
+	private function items_merged_themes_plugins(\WP_REST_Request $request)
+	{
+		$page = max(1, (int) ($request->get_param('page') ?? 1));
+		$per_page = (int) ($request->get_param('per_page') ?? 30);
+		if ($per_page < 1) {
+			$per_page = 30;
+		}
+		if ($per_page > 90) {
+			$per_page = 90;
+		}
+
+		$keyword = $request->get_param('keyword');
+		$filter = $request->get_param('filter');
+		$sort = $request->get_param('sort');
+		if (!is_array($sort)) {
+			$sort = [];
+		}
+
+		$offset = ($page - 1) * $per_page;
+		$batch = max(50, $per_page);
+
+		$base = [
+			'keyword' => $keyword,
+			'filter' => $filter,
+			'sort' => $sort,
+			'per_page' => $batch,
+		];
+
+		$tr = Helper::engine_post(
+			'item/list',
+			array_merge($base, [
+				'type' => 'theme',
+				'page' => 1,
+			])
+		);
+		if (is_wp_error($tr)) {
+			return $tr;
+		}
+		$pr = Helper::engine_post(
+			'item/list',
+			array_merge($base, [
+				'type' => 'plugin',
+				'page' => 1,
+			])
+		);
+		if (is_wp_error($pr)) {
+			return $pr;
+		}
+
+		$t_queue =
+			isset($tr['data']) && is_array($tr['data']) ? $tr['data'] : [];
+		$p_queue =
+			isset($pr['data']) && is_array($pr['data']) ? $pr['data'] : [];
+		$t_last = max(0, (int) ($tr['meta']['last_page'] ?? 0));
+		$p_last = max(0, (int) ($pr['meta']['last_page'] ?? 0));
+		$t_total = (int) ($tr['meta']['total'] ?? 0);
+		$p_total = (int) ($pr['meta']['total'] ?? 0);
+		$total = $t_total + $p_total;
+
+		if ($total === 0) {
+			return [
+				'data' => [],
+				'meta' => [
+					'current_page' => $page,
+					'last_page' => 0,
+					'per_page' => $per_page,
+					'total' => 0,
+				],
+			];
+		}
+
+		$last_page = (int) ceil($total / $per_page);
+
+		$t_next = 2;
+		$p_next = 2;
+		$t_exhausted = $t_total === 0;
+		$p_exhausted = $p_total === 0;
+
+		$skipped = 0;
+		$out = [];
+		$max_steps = min(
+			50000,
+			$offset + $per_page + $batch * ($t_last + $p_last + 4)
+		);
+
+		for ($step = 0; $step < $max_steps; $step++) {
+			if ($skipped >= $offset && count($out) >= $per_page) {
+				break;
+			}
+			if (
+				$t_exhausted &&
+				$p_exhausted &&
+				$t_queue === [] &&
+				$p_queue === []
+			) {
+				break;
+			}
+
+			if ($t_queue === [] && !$t_exhausted) {
+				if ($t_next > $t_last) {
+					$t_exhausted = true;
+				} else {
+					$tn = Helper::engine_post(
+						'item/list',
+						array_merge($base, [
+							'type' => 'theme',
+							'page' => $t_next,
+						])
+					);
+					if (is_wp_error($tn)) {
+						return $tn;
+					}
+					$t_queue =
+						isset($tn['data']) && is_array($tn['data'])
+							? $tn['data']
+							: [];
+					$t_last = max(
+						$t_last,
+						(int) ($tn['meta']['last_page'] ?? $t_last)
+					);
+					$t_next++;
+					if ($t_queue === [] && $t_next > $t_last) {
+						$t_exhausted = true;
+					}
+				}
+			}
+
+			if ($p_queue === [] && !$p_exhausted) {
+				if ($p_next > $p_last) {
+					$p_exhausted = true;
+				} else {
+					$pn = Helper::engine_post(
+						'item/list',
+						array_merge($base, [
+							'type' => 'plugin',
+							'page' => $p_next,
+						])
+					);
+					if (is_wp_error($pn)) {
+						return $pn;
+					}
+					$p_queue =
+						isset($pn['data']) && is_array($pn['data'])
+							? $pn['data']
+							: [];
+					$p_last = max(
+						$p_last,
+						(int) ($pn['meta']['last_page'] ?? $p_last)
+					);
+					$p_next++;
+					if ($p_queue === [] && $p_next > $p_last) {
+						$p_exhausted = true;
+					}
+				}
+			}
+
+			if ($t_queue === [] && $p_queue === []) {
+				continue;
+			}
+
+			$t_head = $t_queue[0] ?? null;
+			$p_head = $p_queue[0] ?? null;
+
+			if ($t_head === null) {
+				$pick = 'p';
+			} elseif ($p_head === null) {
+				$pick = 't';
+			} else {
+				$pick =
+					$this->compare_merged_items($t_head, $p_head, $sort) <= 0
+						? 't'
+						: 'p';
+			}
+
+			if ($pick === 't') {
+				$item = array_shift($t_queue);
+			} else {
+				$item = array_shift($p_queue);
+			}
+
+			if ($item === null) {
+				continue;
+			}
+
+			if ($skipped < $offset) {
+				$skipped++;
+			} else {
+				$out[] = $item;
+			}
+		}
+
+		return [
+			'data' => $out,
+			'meta' => [
+				'current_page' => $page,
+				'last_page' => $last_page,
+				'per_page' => $per_page,
+				'total' => $total,
+			],
+		];
+	}
+
+	/**
+	 * @param array<string,mixed> $a
+	 * @param array<string,mixed> $b
+	 */
+	private function compare_merged_items(array $a, array $b, array $sort): int
+	{
+		$by =
+			isset($sort['order_by']) && is_string($sort['order_by'])
+				? $sort['order_by']
+				: 'popularity';
+		$desc =
+			!isset($sort['order']) ||
+			!is_string($sort['order']) ||
+			strtolower($sort['order']) !== 'asc';
+		$sign = $desc ? -1 : 1;
+
+		switch ($by) {
+			case 'title':
+				$cmp = strcasecmp(
+					(string) ($a['title'] ?? ''),
+					(string) ($b['title'] ?? '')
+				);
+				break;
+			case 'updated':
+				$cmp =
+					((int) ($a['updated'] ?? 0)) <=>
+					((int) ($b['updated'] ?? 0));
+				break;
+			case 'added':
+				$cmp =
+					((int) ($a['created'] ?? 0)) <=>
+					((int) ($b['created'] ?? 0));
+				break;
+			case 'views':
+				$cmp =
+					((int) ($a['install_count'] ?? 0)) <=>
+					((int) ($b['install_count'] ?? 0));
+				break;
+			case 'popularity':
+			default:
+				$va =
+					(int) ($a['install_count'] ?? 0) +
+					(int) ($a['download_count'] ?? 0);
+				$vb =
+					(int) ($b['install_count'] ?? 0) +
+					(int) ($b['download_count'] ?? 0);
+				$cmp = $va <=> $vb;
+				break;
+		}
+
+		$cmp *= $sign;
+		if ($cmp !== 0) {
+			return $cmp < 0 ? -1 : 1;
+		}
+
+		return strcmp((string) ($a['id'] ?? ''), (string) ($b['id'] ?? ''));
 	}
 
 	public function stats(\WP_REST_Request $request)

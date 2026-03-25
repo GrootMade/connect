@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import {
 	Card,
 	CardContent,
+	CardDescription,
 	CardFooter,
 	CardHeader,
 	CardTitle
@@ -17,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import useApiMutation from '@/hooks/use-api-mutation';
 import useNotification from '@/hooks/use-notification';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { licenseFormZodSchema } from '@/zod/license';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,7 +40,7 @@ export default function RegisterLicenseForm() {
 	const { isPending, mutateAsync } = useApiMutation<
 		LicenseActivationResponse,
 		LicenseActivationSchema
-	>('license/activate');
+	>(API.license.create);
 	async function onSubmit(data: LicenseActivationSchema) {
 		notify.promise(mutateAsync(data), {
 			loading: __('Activating License'),
@@ -55,11 +57,18 @@ export default function RegisterLicenseForm() {
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)}>
-				<Card>
-					<CardHeader>
-						<CardTitle>{__('Activate License')}</CardTitle>
+				<Card className="overflow-hidden">
+					<CardHeader className="border-b border-border/80 bg-muted/30">
+						<CardTitle className="text-base font-semibold">
+							{__('Activate License')}
+						</CardTitle>
+						<CardDescription>
+							{__(
+								'Paste your key below. It stays on this site only.'
+							)}
+						</CardDescription>
 					</CardHeader>
-					<CardContent>
+					<CardContent className="pt-6">
 						<FormField
 							control={form.control}
 							name="license_key"

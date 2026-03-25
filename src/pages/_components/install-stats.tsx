@@ -1,7 +1,9 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useApiFetch from '@/hooks/use-api-fetch';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { Link } from '@/router';
 import { TPostItemCollection } from '@/types/item';
 import { useMemo } from '@wordpress/element';
 import { ClassNameValue } from 'tailwind-merge';
@@ -9,10 +11,15 @@ import { StackedBarChart, StackedBarChartDataType } from './stacked-bar-chart';
 
 type Props = {
 	className?: ClassNameValue;
+	variant?: 'default' | 'compact';
 };
 
-export default function InstallStats({ className }: Props) {
-	const { data } = useApiFetch<TPostItemCollection>(`update/list`, {});
+export default function InstallStats({
+	className,
+	variant = 'default'
+}: Props) {
+	const compact = variant === 'compact';
+	const { data } = useApiFetch<TPostItemCollection>(API.update.read, {});
 	const themes = useMemo(() => {
 		if (data?.data) {
 			return data?.data?.filter((item) => item.type === 'theme');
@@ -44,17 +51,66 @@ export default function InstallStats({ className }: Props) {
 	);
 	const total = plugins.length + themes.length;
 	return (
-		<Card className={cn('aspect-auto justify-between ', className)}>
-			<CardHeader className="border-b border-border">
-				<h3 className="text-lg">{__('Installed Assets')}</h3>
+		<Card className={cn('aspect-auto justify-between', className)}>
+			<CardHeader
+				className={cn(
+					'border-b border-border',
+					compact &&
+						'flex flex-row flex-wrap items-center justify-between gap-2 py-3'
+				)}
+			>
+				<CardTitle
+					className={cn(
+						'font-medium',
+						compact ? 'text-sm' : 'text-lg'
+					)}
+				>
+					{__('Installed Assets')}
+				</CardTitle>
+				{compact ? (
+					<Link
+						to="/updates"
+						className="text-xs font-medium text-primary no-underline underline-offset-4 hover:underline sm:text-sm"
+					>
+						{__('Open updates')}
+					</Link>
+				) : null}
 			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
-				<div className="text-muted-foreground">{__('Installed')}</div>
-				<div className="space-x-2">
-					<span className="text-3xl">{total}</span>
-					<span className="text-muted-foreground">{__('Items')}</span>
+			<CardContent
+				className={cn(
+					'flex flex-col',
+					compact ? 'gap-2 pt-4' : 'gap-4'
+				)}
+			>
+				<div
+					className={cn(
+						'text-muted-foreground',
+						compact ? 'text-xs' : ''
+					)}
+				>
+					{__('Installed')}
 				</div>
-				<StackedBarChart data={chartData} />
+				<div className="space-x-2">
+					<span
+						className={
+							compact ? 'text-2xl font-semibold' : 'text-3xl'
+						}
+					>
+						{total}
+					</span>
+					<span
+						className={cn(
+							'text-muted-foreground',
+							compact ? 'text-sm' : ''
+						)}
+					>
+						{__('Items')}
+					</span>
+				</div>
+				<StackedBarChart
+					compact={compact}
+					data={chartData}
+				/>
 			</CardContent>
 		</Card>
 	);

@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/popover';
 import { languages } from '@/config/languages';
 import useApiMutation from '@/hooks/use-api-mutation';
+import { API } from '@/lib/api-endpoints';
 import { cn } from '@/lib/utils';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from '@wordpress/element';
@@ -29,8 +30,9 @@ export default function LanguageSelector() {
 	const [open, setOpen] = useState<boolean>();
 	const [disabled, setDisabled] = useState<boolean>(false);
 	const [value, setValue] = useState(window.AVAILABLE_I18NS.locale);
-	const { mutateAsync, isPending } =
-		useApiMutation<TLanguageData>('setting/language');
+	const { mutateAsync, isPending } = useApiMutation<TLanguageData>(
+		API.setting.language
+	);
 	useEffect(() => {
 		if (value != window.AVAILABLE_I18NS.locale) {
 			setDisabled(true);

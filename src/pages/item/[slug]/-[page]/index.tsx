@@ -1,25 +1,31 @@
 import AdCard from '@/components/ad-card';
 import { AppPageShell } from '@/components/body/page-shell';
 import FilterBar from '@/components/filter/filter-bar';
+import { EmptyState } from '@/components/page/empty-state';
 import Paging from '@/components/paging';
 import ActionLoader from '@/components/ui/action-loader';
-import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { adsConfig } from '@/config/ads';
 import useApiFetch from '@/hooks/use-api-fetch';
-import useDataCollection, { FilterOption } from '@/hooks/use-data-collection';
+import useDataCollection from '@/hooks/use-data-collection';
 import useGetTerms from '@/hooks/use-get-terms';
+import useViewMode from '@/hooks/use-view-mode';
+import { API } from '@/lib/api-endpoints';
 import { __, _n, sprintf } from '@/lib/i18n';
+import { buildCatalogFilterOptions } from '@/lib/item-catalog-filter-options';
 import { SlugToItemType } from '@/lib/type-to-slug';
 import { cn } from '@/lib/utils';
 import PostGridItem, {
 	PostGridItemSkeleton
 } from '@/pages/item/[slug]/-[page]/_components/PostGridItem';
+import PostListItem, {
+	PostListItemSkeleton
+} from '@/pages/item/[slug]/-[page]/_components/PostListItem';
 import { useParams } from '@/router';
 import { TPostItemCollection } from '@/types/item';
 import { EnumItemSlug } from '@/zod/item';
 import { useEffect, useMemo } from '@wordpress/element';
-import { decodeEntities } from '@wordpress/html-entities';
-import { SearchX } from 'lucide-react';
+import { LayoutGrid, List, SearchX } from 'lucide-react';
 import { z } from 'zod';
 
 const sort_items: ReturnType<typeof useDataCollection>['sort'] = [
@@ -51,16 +57,15 @@ const paramsSchema = z.object({
 });
 function NoSearchResultFound() {
 	return (
-		<Card className="col-span-1  md:col-span-3">
-			<div className="flex flex-col items-center gap-4 px-4 py-10 sm:px-6">
-				<div>
-					<SearchX size={48} />
-				</div>
-				<div className="text-center text-sm italic text-muted-foreground">
-					{__("We couldn't find the item you're looking for")}
-				</div>
-			</div>
-		</Card>
+		<div className="col-span-full">
+			<EmptyState
+				icon={SearchX}
+				title={__('No matches')}
+				description={__(
+					"Try different filters or keywords — we couldn't find items for this search."
+				)}
+			/>
+		</div>
 	);
 }
 export default function Component() {
@@ -73,286 +78,14 @@ export default function Component() {
 	const page = params.data.page;
 	const { data: terms } = useGetTerms(type);
 
-	const filters = useMemo<FilterOption[]>(
+	const filters = useMemo(
 		() =>
-			terms
-				? [
-						{
-							id: 'category',
-							label: __('Category'),
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'fv_category'
-								).length > 0,
-							onBarView: true,
-							isMulti: true,
-							showAll: true,
-							options: terms
-								?.filter((i) => i.taxonomy === 'fv_category')
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'tag',
-							label: __('Tag'),
-							isMulti: true,
-							enabled:
-								terms?.filter((i) => i.taxonomy === 'fv_tag')
-									.length > 0,
-							options: terms
-								?.filter((i) => i.taxonomy === 'fv_tag')
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-
-						{
-							id: 'compatible_with',
-							label: __('Compatible With'),
-							isMulti: false,
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'fv_compatible_with'
-								).length > 0,
-							options: terms
-								?.filter(
-									(i) => i.taxonomy === 'fv_compatible_with'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'compatible_browsers',
-							label: __('Compatible Browsers'),
-							isMulti: false,
-							enabled:
-								terms?.filter(
-									(i) =>
-										i.taxonomy === 'fv_compatible_browsers'
-								).length > 0,
-							options: terms
-								?.filter(
-									(i) =>
-										i.taxonomy === 'fv_compatible_browsers'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'documentation',
-							label: __('Documentation'),
-							isMulti: false,
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'fv_documentation'
-								).length > 0,
-							options: terms
-								?.filter(
-									(i) => i.taxonomy === 'fv_documentation'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'files_included',
-							label: __('Files Included'),
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'fv_files_included'
-								).length > 0,
-							isMulti: false,
-							options: terms
-								?.filter(
-									(i) => i.taxonomy === 'fv_files_included'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'gutenberg_optimized',
-							label: __('Gutenberg Optimized'),
-							enabled:
-								terms?.filter(
-									(i) =>
-										i.taxonomy === 'fv_gutenberg_optimized'
-								).length > 0,
-							isMulti: false,
-							options: terms
-								?.filter(
-									(i) =>
-										i.taxonomy === 'fv_gutenberg_optimized'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'high_resolution',
-							label: __('High Resolution'),
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'fv_high_resolution'
-								).length > 0,
-							isMulti: false,
-							options: terms
-								?.filter(
-									(i) => i.taxonomy === 'fv_high_resolution'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'product_status',
-							label: __('Product Status'),
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'fv_product_status'
-								).length > 0,
-							isMulti: false,
-							options: terms
-								?.filter(
-									(i) => i.taxonomy === 'fv_product_status'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'software_version',
-							label: __('Software Versions'),
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'fv_software_version'
-								).length > 0,
-							isMulti: false,
-							options: terms
-								?.filter(
-									(i) => i.taxonomy === 'fv_software_version'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'update_status',
-							label: __('Update Status'),
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'fv_update_status'
-								).length > 0,
-							isMulti: false,
-							options: terms
-								?.filter(
-									(i) => i.taxonomy === 'fv_update_status'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'widget_ready',
-							label: __('Widget Ready'),
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'fv_widget_ready'
-								).length > 0,
-							isMulti: false,
-							options: terms
-								?.filter(
-									(i) => i.taxonomy === 'fv_widget_ready'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'access_level',
-							label: __('Access'),
-							isMulti: true,
-							onBarView: true,
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'fv_access_level'
-								).length > 0,
-							options: terms
-								?.filter(
-									(i) => i.taxonomy === 'fv_access_level'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'original_author',
-							label: __('Access'),
-							isMulti: true,
-							enabled:
-								terms?.filter(
-									(i) => i.taxonomy === 'original_author_tax'
-								).length > 0,
-							options: terms
-								?.filter(
-									(i) => i.taxonomy === 'original_author_tax'
-								)
-								.sort((a, b) => a.slug.localeCompare(b.slug))
-								.map((i) => ({
-									label: decodeEntities(i.name),
-									value: i.slug
-								}))
-						},
-						{
-							id: 'add_content',
-							label: __('Additional Content'),
-							isMulti: false,
-							enabled:
-								item_type.slug != 'template-kit' &&
-								item_type.slug != 'request',
-							options: [
-								{
-									label: __('Yes'),
-									value: 'yes'
-								},
-								{
-									label: __('No'),
-									value: 'no'
-								}
-							]
-						}
-					]
-				: [],
-		[terms, item_type]
+			buildCatalogFilterOptions(terms, {
+				includeAddContent:
+					item_type.slug !== 'template-kit' &&
+					item_type.slug !== 'request'
+			}),
+		[terms, item_type.slug]
 	);
 	const dataCollection = useDataCollection({
 		options: filters,
@@ -364,7 +97,7 @@ export default function Component() {
 		isLoading: isItemsLoading,
 		isFetching
 	} = useApiFetch<TPostItemCollection>(
-		'item/list',
+		API.item.readList,
 		{
 			type,
 			page,
@@ -375,6 +108,7 @@ export default function Component() {
 		},
 		true
 	);
+	const { mode, setViewMode } = useViewMode();
 	useEffect(() => {
 		window.scrollTo({
 			top: 0,
@@ -383,12 +117,16 @@ export default function Component() {
 	}, [data]);
 	return (
 		<AppPageShell
-			title={item_type?.label}
-			description={item_type?.description}
+			title={item_type?.label ?? ''}
+			compactListing
+			showTitle={false}
 			isFetching={isFetching}
 			isLoading={isItemsLoading}
 			filterBar={
 				<FilterBar
+					variant="compact"
+					pageTitle={item_type?.label ?? ''}
+					pageDescription={item_type?.description}
 					collection={dataCollection}
 					meta={
 						<>
@@ -400,7 +138,7 @@ export default function Component() {
 								/>
 							)}
 							{data?.meta != null && data.meta.total >= 0 ? (
-								<span className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
+								<span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground sm:text-sm">
 									{sprintf(
 										_n(
 											'%s result',
@@ -411,14 +149,48 @@ export default function Component() {
 									)}
 								</span>
 							) : null}
+							<div className="flex shrink-0 rounded-md border">
+								<Button
+									variant={
+										mode === 'grid' ? 'secondary' : 'ghost'
+									}
+									size="sm"
+									className="h-8 w-8 p-0"
+									onClick={() => setViewMode('grid')}
+									title={__('Grid view')}
+								>
+									<LayoutGrid className="h-4 w-4" />
+								</Button>
+								<Button
+									variant={
+										mode === 'list' ? 'secondary' : 'ghost'
+									}
+									size="sm"
+									className="h-8 w-8 p-0"
+									onClick={() => setViewMode('list')}
+									title={__('List view')}
+								>
+									<List className="h-4 w-4" />
+								</Button>
+							</div>
 						</>
 					}
 				/>
 			}
 			preloader={
-				<div className="grid grid-cols-1 md:grid-cols-3">
-					<PostGridItemSkeleton />
-				</div>
+				mode === 'list' ? (
+					<div className="flex flex-col gap-3">
+						<PostListItemSkeleton />
+						<PostListItemSkeleton />
+						<PostListItemSkeleton />
+					</div>
+				) : (
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4 2xl:grid-cols-5">
+						{Array.from({ length: 10 }).map((_, i) => (
+							<PostGridItemSkeleton key={i} />
+						))}
+					</div>
+				)
 			}
 			breadcrump={[
 				{
@@ -431,22 +203,33 @@ export default function Component() {
 			]}
 		>
 			{data && (
-				<>
+				<div className="gm-reveal-stagger flex flex-col gap-5 sm:gap-6">
 					<div
-						className={cn([
-							'grid grid-cols-1 gap-5 md:grid-cols-3 lg:gap-7'
-						])}
+						className={cn(
+							mode === 'list'
+								? 'flex flex-col gap-3'
+								: 'grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 xl:grid-cols-4 2xl:grid-cols-5'
+						)}
 					>
 						{data.data.length > 0 ? (
 							<>
-								{data.data.map((item, index) => (
-									<PostGridItem
-										key={item.id}
-										item={item}
-										style={{ order: index }}
-									/>
-								))}
-								{adsConfig.enabled &&
+								{data.data.map((item, index) =>
+									mode === 'list' ? (
+										<PostListItem
+											key={item.id}
+											item={item}
+											style={{ order: index }}
+										/>
+									) : (
+										<PostGridItem
+											key={item.id}
+											item={item}
+											style={{ order: index }}
+										/>
+									)
+								)}
+								{mode === 'grid' &&
+									adsConfig.enabled &&
 									Array.from(
 										{ length: adsConfig.adsPerPage },
 										(_, i) => {
@@ -471,7 +254,7 @@ export default function Component() {
 							<NoSearchResultFound />
 						)}
 					</div>
-					{data.meta && (
+					{data.meta ? (
 						<Paging
 							currentPage={Number(page)}
 							totalItems={data.meta?.total}
@@ -480,8 +263,8 @@ export default function Component() {
 								`/item/${item_type.slug}/${_page}?${dataCollection?.searchParams}`
 							}
 						/>
-					)}
-				</>
+					) : null}
+				</div>
 			)}
 		</AppPageShell>
 	);

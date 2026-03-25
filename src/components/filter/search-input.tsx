@@ -8,8 +8,10 @@ import { Input } from '../ui/input';
 
 type Props = {
 	collection: ReturnType<typeof useDataCollection>;
+	/** Slightly shorter field for compact listing toolbars */
+	compact?: boolean;
 };
-export default function Search({ collection }: Props) {
+export default function Search({ collection, compact = false }: Props) {
 	const [text, setText] = useState<string>(collection.search?.keyword ?? '');
 	const debounced = useDebouncedCallback((value: string) => {
 		collection.setSearch(value);
@@ -18,11 +20,17 @@ export default function Search({ collection }: Props) {
 		setText(collection.search?.keyword || '');
 	}, [collection.search?.keyword]);
 	return (
-		<div className="relative w-full sm:w-auto">
+		<div
+			className={cn(
+				'relative w-full min-w-0',
+				compact ? 'sm:max-w-[min(100%,280px)]' : 'sm:w-auto'
+			)}
+		>
 			<Input
 				value={text}
 				className={cn(
-					'h-9 w-full pr-7 transition-[width] sm:w-[300px]'
+					'w-full pr-7 transition-[width]',
+					compact ? 'h-8 sm:max-w-[280px]' : 'h-9 sm:w-[300px]'
 				)}
 				placeholder={__('Search Title')}
 				onChange={(e) => {

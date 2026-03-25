@@ -8,6 +8,7 @@ import {
 	CardHeader
 } from '@/components/ui/card';
 import useApiFetch from '@/hooks/use-api-fetch';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { Link, useParams } from '@/router';
 import { TPostChangelogCollection, TPostItem, TPostMedia } from '@/types/item';
@@ -20,7 +21,7 @@ type Props = {
 export default function ChangelogPreview({ item }: Props) {
 	const params = useParams('/item/:slug/detail/:id/:tab?');
 	const { data, isLoading, isFetching } =
-		useApiFetch<TPostChangelogCollection>('item/changelog', {
+		useApiFetch<TPostChangelogCollection>(API.item.changelog, {
 			item_id: params.id,
 			page: 1
 		});

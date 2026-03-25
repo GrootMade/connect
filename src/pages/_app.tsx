@@ -1,5 +1,7 @@
+import { Button } from '@/components/ui/button';
 import Layout from '@/layouts/Layout';
 import { __ } from '@/lib/i18n';
+import { AlertTriangle } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 export default function Component() {
 	return <Layout />;
@@ -15,25 +17,31 @@ export function Catch() {
 		}
 	}
 	return (
-		<main className="flex h-screen w-full flex-col items-center justify-center bg-[#1A2238]">
-			<h1 className="text-9xl font-extrabold tracking-widest text-white">
-				{__('OOPS!')}
-			</h1>
-			<div className="absolute rotate-12 rounded bg-[#FF6A3D] px-2 text-sm">
-				{__('Something Went Wrong')}
-			</div>
-			<button className="mt-5">
-				<a
-					className="group relative inline-block text-sm font-medium text-[#FF6A3D] focus:outline-none focus:ring active:text-orange-500"
+		<main className="flex min-h-[70vh] flex-col items-center justify-center bg-background px-6 py-16 text-center">
+			<div className="flex max-w-md flex-col items-center gap-4">
+				<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+					<AlertTriangle
+						className="h-8 w-8"
+						strokeWidth={1.5}
+						aria-hidden
+					/>
+				</div>
+				<h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+					{__('Something went wrong')}
+				</h1>
+				<p className="text-sm leading-relaxed text-muted-foreground">
+					{__(
+						'An unexpected error occurred. Try going back or return to the dashboard.'
+					)}
+				</p>
+				<Button
+					type="button"
 					onClick={onBack}
+					className="mt-2"
 				>
-					<span className="absolute inset-0 translate-x-0.5 translate-y-0.5 bg-[#FF6A3D] transition-transform group-hover:translate-x-0 group-hover:translate-y-0"></span>
-
-					<span className="relative block border border-current bg-[#1A2238] px-8 py-3">
-						{__('Go Back')}
-					</span>
-				</a>
-			</button>
+					{__('Go back')}
+				</Button>
+			</div>
 		</main>
 	);
 }

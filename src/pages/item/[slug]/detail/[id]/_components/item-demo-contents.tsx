@@ -4,6 +4,7 @@ import SimpleTable, { SimpleColumnDef } from '@/components/table/simple-table';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import useApiFetch from '@/hooks/use-api-fetch';
+import { API } from '@/lib/api-endpoints';
 import capitalizeHyphenatedWords from '@/lib/capitalizeHyphenatedWords';
 import { __ } from '@/lib/i18n';
 import { useParams } from '@/router';
@@ -78,7 +79,7 @@ export default function ItemDemoContents({ item }: Props) {
 	const [searchParams] = useSearchParams();
 	const page = pageSchema.parse(Number(searchParams?.get('page') ?? 1));
 	const { data, isLoading, isFetching } = useApiFetch<TDemoContentCollection>(
-		'item/demo-content',
+		API.item.demoContent,
 		{
 			item_id: params.id,
 			page

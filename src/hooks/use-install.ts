@@ -1,3 +1,4 @@
+import { API } from '@/lib/api-endpoints';
 import { claimAfterDelay } from '@/lib/download-delay';
 import { __, sprintf } from '@/lib/i18n';
 import VersionCompare from '@/lib/version_compare';
@@ -38,7 +39,7 @@ export default function useInstall() {
 	const { mutateAsync: installPlugin } = useApiMutation<
 		PluginInstallResponse,
 		PluginInstallSchema
-	>('item/install');
+	>(API.item.update);
 	const { data: activation, can_install, can_download } = useActivation();
 
 	const isInstallable = useCallback(
@@ -85,13 +86,13 @@ export default function useInstall() {
 	const clearCache = useCallback(() => {
 		clearInstalledCache();
 		queryClient.invalidateQueries({
-			queryKey: ['license/detail']
+			queryKey: [API.license.read]
 		});
 		queryClient.invalidateQueries({
-			queryKey: ['item/detail']
+			queryKey: [API.item.readDetail]
 		});
 		queryClient.invalidateQueries({
-			queryKey: ['history/list']
+			queryKey: [API.history.read]
 		});
 	}, [clearInstalledCache, queryClient]);
 	const checkActivation = useCallback(() => {

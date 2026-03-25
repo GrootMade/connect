@@ -1,3 +1,4 @@
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { TApiError } from '@/types/api';
 import { useQueryClient } from '@tanstack/react-query';
@@ -52,12 +53,13 @@ export function SettingProvider({ children, ...props }: SettingProviderProps) {
 		isFetched,
 		isLoading,
 		isFetching
-	} = useApiFetch<TSetting>(`setting/get`, {});
-	const { mutateAsync: updateSettingAsync } =
-		useApiMutation<z.infer<typeof settingSchema>>('setting/update');
+	} = useApiFetch<TSetting>(API.setting.read, {});
+	const { mutateAsync: updateSettingAsync } = useApiMutation<
+		z.infer<typeof settingSchema>
+	>(API.setting.update);
 	const clearCache = useCallback(() => {
 		queryClient.invalidateQueries({
-			queryKey: ['setting/get']
+			queryKey: [API.setting.read]
 		});
 	}, [queryClient]);
 	const setSetting = useCallback(

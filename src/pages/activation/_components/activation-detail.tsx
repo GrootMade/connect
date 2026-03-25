@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ActivationStatusToString } from '@/config/activation-status';
 import useApiMutation from '@/hooks/use-api-mutation';
 import useNotification from '@/hooks/use-notification';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { TActivationDetail } from '@/types/license';
 import { useQueryClient } from '@tanstack/react-query';
@@ -54,12 +55,12 @@ export function ActivationDetailItemSkeleton() {
 export default function ActivationDetailItem({ detail }: Props) {
 	const queryClient = useQueryClient();
 	const notify = useNotification();
-	const { isPending, mutateAsync } = useApiMutation('license/deactivate');
+	const { isPending, mutateAsync } = useApiMutation(API.license.delete);
 	async function onSubmit() {
 		try {
 			await mutateAsync({});
 			notify.success(__('License Deactivated Successfully'));
-			queryClient.invalidateQueries({ queryKey: ['license/detail'] });
+			queryClient.invalidateQueries({ queryKey: [API.license.read] });
 		} catch (error) {
 			notify.error(
 				(error as { message?: string })?.message ??

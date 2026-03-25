@@ -6,6 +6,7 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import useApiFetch from '@/hooks/use-api-fetch';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import renderHtml from '@/lib/render-html';
 import { TCommentResponse } from '@/types/item';
@@ -20,7 +21,7 @@ export default function ItemComments({ itemId, topicId }: Props) {
 	const parsedItemId = Number(itemId);
 	const parsedTopicId = Number(topicId);
 	const { data, isLoading, isFetching } = useApiFetch<TCommentResponse>(
-		'item/comments',
+		API.item.comments,
 		{
 			item_id: parsedItemId,
 			topic_id: parsedTopicId

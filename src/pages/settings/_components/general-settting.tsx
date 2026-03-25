@@ -18,15 +18,16 @@ export default function SettingsForm() {
 
 	return (
 		!!settings && (
-			<Card>
-				<CardHeader>
-					<CardTitle>{__('General')}</CardTitle>
+			<Card className="overflow-hidden">
+				<CardHeader className="border-b border-border/80 bg-muted/30">
+					<CardTitle className="text-base font-semibold">
+						{__('General')}
+					</CardTitle>
 					<CardDescription>
 						{__('Manage general plugin behavior.')}
 					</CardDescription>
 				</CardHeader>
-				<Separator />
-				<CardContent className="flex flex-col">
+				<CardContent className="flex flex-col pt-6">
 					<SettingControl
 						label={__('Auto Activate')}
 						description={__(

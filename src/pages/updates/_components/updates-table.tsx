@@ -1,10 +1,18 @@
-import { DataTable } from '@/components/data-table';
 import { BulkActionType } from '@/components/data-table-bulk-action';
+import { DataTablePagination } from '@/components/data-table-pagination';
+import { DataTableToolbar } from '@/components/data-table-toolbar';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow
+} from '@/components/ui/table';
 import useActivation from '@/hooks/use-activation';
 import useApiMutation from '@/hooks/use-api-mutation';
 import useAutoUpdate from '@/hooks/use-auto-update';
-import { useDataTable } from '@/hooks/use-data-table';
 import {
 	PluginInstallResponse,
 	PluginInstallSchema
@@ -12,6 +20,7 @@ import {
 import useInstalled from '@/hooks/use-is-installed';
 import useNotification from '@/hooks/use-notification';
 import useTaskQueue from '@/hooks/use-task-queue';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { TApiError } from '@/types/api';
 import {
@@ -19,8 +28,22 @@ import {
 	DataTableSearchableColumn
 } from '@/types/data-table';
 import { TThemePluginItem } from '@/types/item';
-import { ColumnDef } from '@tanstack/react-table';
-import { useCallback, useMemo } from '@wordpress/element';
+import {
+	ColumnDef,
+	ColumnFiltersState,
+	PaginationState,
+	SortingState,
+	VisibilityState,
+	flexRender,
+	getCoreRowModel,
+	getFacetedRowModel,
+	getFacetedUniqueValues,
+	getFilteredRowModel,
+	getPaginationRowModel,
+	getSortedRowModel,
+	useReactTable
+} from '@tanstack/react-table';
+import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
 import { getColumns } from './columns';
 
 const filterableColumns: DataTableFilterableColumn<TThemePluginItem>[] = [
@@ -58,7 +81,7 @@ export default function UpdatesTable({ data }: UpdateTableProps) {
 	const { mutateAsync: installPlugin } = useApiMutation<
 		PluginInstallResponse,
 		PluginInstallSchema
-	>('item/install');
+	>(API.item.update);
 	const { changeStatus } = useAutoUpdate();
 	const { clearCache } = useInstalled();
 	const { addTask } = useTaskQueue();
@@ -178,17 +201,118 @@ export default function UpdatesTable({ data }: UpdateTableProps) {
 		() => getColumns(),
 		[]
 	);
-	const { table } = useDataTable({
+	const [rowSelection, setRowSelection] = useState({});
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+		{}
+	);
+	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+	const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10
+	});
+	const [sorting, setSorting] = useState<SortingState>([]);
+
+	const pagination = useMemo(
+		() => ({
+			pageIndex,
+			pageSize
+		}),
+		[pageIndex, pageSize]
+	);
+
+	useEffect(() => {
+		setRowSelection({});
+	}, [pagination]);
+
+	const table = useReactTable({
 		data: data,
-		columns
+		columns,
+		autoResetAll: false,
+		state: {
+			pagination,
+			sorting,
+			columnVisibility,
+			rowSelection,
+			columnFilters
+		},
+		enableRowSelection: true,
+		onRowSelectionChange: setRowSelection,
+		onPaginationChange: setPagination,
+		onSortingChange: setSorting,
+		onColumnFiltersChange: setColumnFilters,
+		onColumnVisibilityChange: setColumnVisibility,
+		getCoreRowModel: getCoreRowModel(),
+		getFilteredRowModel: getFilteredRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		getFacetedRowModel: getFacetedRowModel(),
+		getFacetedUniqueValues: getFacetedUniqueValues(),
+		keepPinnedRows: false
 	});
 	return (
-		<DataTable
-			table={table}
-			columns={columns}
-			searchableColumns={searchableColumns}
-			filterableColumns={filterableColumns}
-			bulkActions={bulkActions}
-		/>
+		<div className="space-y-4">
+			<DataTableToolbar
+				table={table}
+				filterableColumns={filterableColumns}
+				searchableColumns={searchableColumns}
+				bulkActions={bulkActions}
+			/>
+			<div className="flex-shrink overflow-hidden rounded-lg border border-border/80 bg-card shadow-card">
+				<Table>
+					<TableHeader>
+						{table.getHeaderGroups().map((headerGroup) => (
+							<TableRow key={headerGroup.id}>
+								{headerGroup.headers.map((header) => (
+									<TableHead key={header.id}>
+										{header.isPlaceholder
+											? null
+											: (flexRender(
+													header.column.columnDef
+														.header,
+													header.getContext()
+												) as React.ReactNode)}
+									</TableHead>
+								))}
+							</TableRow>
+						))}
+					</TableHeader>
+					<TableBody>
+						{table.getRowModel().rows.length ? (
+							table.getRowModel().rows.map((row) => (
+								<TableRow
+									key={row.id}
+									data-state={
+										row.getIsSelected() && 'selected'
+									}
+								>
+									{row.getVisibleCells().map((cell) => (
+										<TableCell key={cell.id}>
+											{
+												flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext()
+												) as React.ReactNode
+											}
+										</TableCell>
+									))}
+								</TableRow>
+							))
+						) : (
+							<TableRow>
+								<TableCell
+									colSpan={columns.length}
+									className="h-32 px-6 text-center text-sm text-muted-foreground"
+								>
+									{__(
+										'No rows match your filters. Try adjusting search or filters.'
+									)}
+								</TableCell>
+							</TableRow>
+						)}
+					</TableBody>
+				</Table>
+			</div>
+			<DataTablePagination table={table} />
+		</div>
 	);
 }

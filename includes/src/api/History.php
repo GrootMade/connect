@@ -21,6 +21,10 @@ class History extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'read' => [
+				'methods' => 'POST',
+				'callback' => [$this, 'list'],
+			],
 			'list' => [
 				'methods' => 'POST',
 				'callback' => [$this, 'list'],

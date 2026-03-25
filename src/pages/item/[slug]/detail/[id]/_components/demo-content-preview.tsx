@@ -6,6 +6,7 @@ import {
 	CardHeader
 } from '@/components/ui/card';
 import useApiFetch from '@/hooks/use-api-fetch';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { Link, useParams } from '@/router';
 import { TDemoContentCollection, TPostItem } from '@/types/item';
@@ -18,7 +19,7 @@ type Props = {
 export default function DemoContentPreview({ item }: Props) {
 	const params = useParams('/item/:slug/detail/:id/:tab?');
 	const { data, isLoading, isFetching } = useApiFetch<TDemoContentCollection>(
-		'item/demo-content',
+		API.item.demoContent,
 		{
 			item_id: params.id
 		}

@@ -1,17 +1,24 @@
 import { Badge } from '@/components/ui/badge';
+import useApiFetch from '@/hooks/use-api-fetch';
 import useInstalled from '@/hooks/use-is-installed';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
+import { ItemStatsResponse } from '@/types/item';
 import {
 	ArrowLeft,
+	Clock,
 	Drum,
+	Flame,
 	Heart,
 	HomeIcon,
+	Layers,
 	Library,
 	List,
 	Palette,
 	Repeat,
 	Settings,
 	ShieldCheck,
+	Sparkles,
 	ToyBrick
 } from 'lucide-react';
 import React from 'react';
@@ -23,6 +30,8 @@ type NavItemBase = {
 	label: string;
 	icon: React.ComponentType<IconProps>;
 	disabled?: boolean;
+	/** Total items in catalog when loaded (from API) */
+	count?: number;
 	useNotice?: React.ComponentType | (() => React.ReactNode);
 	as?: 'link' | 'a';
 	external?: boolean;
@@ -53,93 +62,109 @@ export type SidebarNavItems = {
 	items: NavItem[];
 };
 
-const navIds = {
-	discover: 'discover',
-	library: 'library',
-	settings: 'settings'
-};
 export default function useSidebar() {
 	const { updateable } = useInstalled();
 	const { activated, active } = useActivation();
+	const { data: stats, isSuccess: statsReady } =
+		useApiFetch<ItemStatsResponse>(API.item.readStats);
+
+	const licensed = activated && active;
+
 	const items: SidebarNavItems[] = [
 		{
-			id: 'back-dashboard',
-			label: __('Back to Dashboard'),
+			id: 'primary',
 			showLabel: false,
+			label: '',
 			items: [
 				{
-					label: __('Back to Dashboard'),
+					label: __('WP admin'),
 					icon: ArrowLeft,
 					href: 'index.php',
 					as: 'a'
-				}
-			]
-		},
-		{
-			id: navIds.discover,
-			label: __('Discover'),
-			showLabel: true,
-			items: [
+				},
 				{
-					label: __('Home'),
+					label: __('Dashboard'),
 					icon: HomeIcon,
 					href: '/'
-				},
-				{
-					label: __('Popular Themes'),
-					icon: Palette,
-					href: '/popular/theme'
-				},
-				{
-					label: __('Popular Plugins'),
-					icon: ToyBrick,
-					href: '/popular/plugin'
 				}
 			]
 		},
 		{
-			id: navIds.library,
-			label: __('Library'),
+			id: 'explore',
+			label: __('Explore'),
 			showLabel: true,
-
 			items: [
+				{
+					label: __('Browse all'),
+					icon: Layers,
+					href: '/browse',
+					...(statsReady && stats
+						? { count: stats.themes + stats.plugins }
+						: {})
+				},
+				{
+					label: __('Most popular'),
+					icon: Flame,
+					href: '/browse?order_by=popularity&order=desc'
+				},
+				{
+					label: __('Latest updated'),
+					icon: Clock,
+					href: '/browse?order_by=updated&order=desc'
+				},
+				{
+					label: __('Newest'),
+					icon: Sparkles,
+					href: '/browse?order_by=added&order=desc'
+				},
 				{
 					label: __('Themes'),
 					icon: Palette,
-					href: '/item/theme'
+					href: '/item/theme',
+					...(statsReady && stats ? { count: stats.themes } : {})
 				},
 				{
 					label: __('Plugins'),
 					icon: ToyBrick,
-					href: '/item/plugin'
+					href: '/item/plugin',
+					...(statsReady && stats ? { count: stats.plugins } : {})
 				},
 				{
-					label: __('Template Kits'),
+					label: __('Template kits'),
 					icon: Drum,
-					href: '/item/template-kit'
+					href: '/item/template-kit',
+					...(statsReady && stats ? { count: stats.kits } : {})
 				},
 				{
 					label: __('Requests'),
 					icon: Library,
 					href: '/item/request'
-				},
+				}
+			]
+		},
+		{
+			id: 'library',
+			label: __('Your library'),
+			showLabel: true,
+			items: [
 				{
 					label: __('Collections'),
 					icon: Heart,
 					href: '/collection',
-					disabled: !activated || !active
+					disabled: !licensed
 				},
 				{
 					label: __('Updates'),
 					icon: Repeat,
-					disabled: !activated || !active,
 					href: '/updates',
+					disabled: !licensed,
 					useNotice: () => {
 						if (updateable && updateable.length > 0) {
 							return (
 								<Badge
 									variant="success"
 									size="sm"
+									className="shrink-0 tabular-nums"
 								>
 									{updateable.length}
 								</Badge>
@@ -151,28 +176,28 @@ export default function useSidebar() {
 					label: __('History'),
 					icon: List,
 					href: '/history',
-					disabled: !activated || !active
+					disabled: !licensed
 				}
 			]
 		},
 		{
-			id: navIds.settings,
-			label: __('Settings'),
+			id: 'configuration',
+			label: __('Configuration'),
 			showLabel: true,
 			items: [
 				{
-					label: __('License Activation'),
+					label: __('License'),
 					icon: ShieldCheck,
 					href: '/activation'
 				},
 				{
-					label: __('Settings'),
+					label: __('Plugin settings'),
 					icon: Settings,
-
 					href: '/settings'
 				}
 			]
 		}
 	];
+
 	return { items };
 }

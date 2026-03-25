@@ -2,12 +2,9 @@ import { __ } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { Fragment, useEffect } from '@wordpress/element';
 import { Home } from 'lucide-react';
-import type { ElementType } from 'react';
+import type { ElementType, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import AdBanner from '../ad-banner';
 import BulkAction from '../bulk-action';
-import LanguageSelector from '../language-select';
-import ModeToggle from '../mode-toggle';
 import TypeSenseSearch from '../typesense-search';
 import {
 	Breadcrumb,
@@ -37,7 +34,11 @@ type Props = {
 	error?: JSX.Element;
 	breadcrump?: BreadCrumbType[];
 	filterBar?: React.ReactNode;
+	/** Right side of the title row (e.g. primary actions); wraps on small screens */
+	headerActions?: ReactNode;
 	onSearchQueryChange?: (query: string) => void;
+	/** Tighter global header + toolbar; use with FilterBar variant compact on listing pages */
+	compactListing?: boolean;
 };
 
 export function AppPageShell({
@@ -53,7 +54,9 @@ export function AppPageShell({
 	error: ErrorComponent,
 	breadcrump,
 	filterBar,
-	onSearchQueryChange
+	headerActions,
+	onSearchQueryChange,
+	compactListing = false
 }: Props) {
 	const Container = as ?? 'main';
 	if (!PreloaderComponent) {
@@ -88,16 +91,19 @@ export function AppPageShell({
 				title={title}
 				showTitle={showTitle}
 				description={description}
+				headerActions={headerActions}
 				onSearchQueryChange={onSearchQueryChange}
+				compactTop={compactListing}
 			/>
 			<Container
-				className={cn([
-					'relative flex flex-col gap-5 pb-8 sm:gap-7',
+				className={cn(
+					'relative flex flex-col pb-8',
+					compactListing ? 'gap-3 sm:gap-4' : 'gap-5 sm:gap-7',
 					(isFetching || isLoading) && 'blur-sm'
-				])}
+				)}
 			>
 				{breadcrump && (
-					<div>
+					<div className={cn(compactListing && 'text-xs')}>
 						<Breadcrumb>
 							<BreadcrumbList>
 								{[
@@ -134,7 +140,12 @@ export function AppPageShell({
 				)}
 				<Notices />
 				{filterBar && (
-					<div className="border-b border-border pb-4 sm:pb-5">
+					<div
+						className={cn(
+							!compactListing &&
+								'border-b border-border pb-4 sm:pb-5'
+						)}
+					>
 						{filterBar}
 					</div>
 				)}
@@ -151,46 +162,78 @@ type PageHeaderProps = {
 	title: string;
 	showTitle: boolean;
 	description?: string;
+	headerActions?: ReactNode;
 	onSearchQueryChange?: (query: string) => void;
+	compactTop?: boolean;
 };
 
 function PageHeader({
 	title,
 	showTitle,
 	description,
-	onSearchQueryChange
+	headerActions,
+	onSearchQueryChange,
+	compactTop = false
 }: PageHeaderProps) {
 	useEffect(() => {
 		document.title = title;
 	}, [title]);
 	return (
 		<>
-			<header className="flex flex-col gap-4 border-b border-border py-6 lg:pt-4">
-				{/* Top bar: Typesense search + global actions */}
-				<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2">
-					<div className="w-full min-w-0 flex-1 sm:max-w-xl">
+			<header
+				className={cn(
+					'flex flex-col border-b border-border',
+					compactTop
+						? 'gap-2 pb-2 pt-0 lg:gap-2 lg:pb-3'
+						: 'gap-4 pb-4 lg:gap-5 lg:pb-6 lg:pt-1'
+				)}
+			>
+				<div
+					className={cn(
+						'flex items-center gap-2',
+						!compactTop && 'gap-3'
+					)}
+				>
+					<div className="min-w-0 flex-1">
 						<TypeSenseSearch onQueryChange={onSearchQueryChange} />
 					</div>
-					<div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
-						<LanguageSelector />
+					<div className="shrink-0">
 						<BulkAction />
-						<ModeToggle />
 					</div>
 				</div>
-				{/* Page title + Ad banner */}
 				{showTitle && (
-					<div className="flex flex-col gap-1">
-						<h1 className="font-heading text-2xl font-bold">
-							{title}
-						</h1>
-						{description && (
-							<p className="max-w-xl text-xs text-muted-foreground/60">
-								{description}
-							</p>
-						)}
+					<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+						<div className="min-w-0 flex-1 space-y-1.5">
+							<h1
+								className={cn(
+									'font-heading font-bold tracking-tight text-foreground',
+									compactTop
+										? 'text-lg sm:text-xl'
+										: 'text-2xl sm:text-3xl'
+								)}
+							>
+								{title}
+							</h1>
+							{description && (
+								<p
+									className={cn(
+										'max-w-2xl text-muted-foreground',
+										compactTop
+											? 'text-xs leading-snug sm:text-sm'
+											: 'text-sm leading-relaxed'
+									)}
+								>
+									{description}
+								</p>
+							)}
+						</div>
+						{headerActions ? (
+							<div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+								{headerActions}
+							</div>
+						) : null}
 					</div>
 				)}
-				<AdBanner />
 			</header>
 		</>
 	);

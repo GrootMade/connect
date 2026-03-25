@@ -1,3 +1,4 @@
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { TActivationDetail } from '@/types/license';
 import { useQueryClient } from '@tanstack/react-query';
@@ -12,14 +13,15 @@ export default function useActivation() {
 	const queryClient = useQueryClient();
 	const { addNotice, removeNotice, flushNotice } = useNotice();
 	const notify = useNotification();
-	const { data, isLoading, isFetching } =
-		useApiFetch<TActivationDetail>(`license/detail`);
+	const { data, isLoading, isFetching } = useApiFetch<TActivationDetail>(
+		API.license.read
+	);
 	const { isPending: isDeactivatePending, mutateAsync: deactivateAsync } =
-		useApiMutation('license/deactivate');
+		useApiMutation(API.license.delete);
 
 	const clearCache = useCallback(() => {
 		queryClient.invalidateQueries({
-			queryKey: ['license/detail']
+			queryKey: [API.license.read]
 		});
 	}, [queryClient]);
 	const deactivate = useCallback(() => {
@@ -28,7 +30,7 @@ export default function useActivation() {
 			success: __('License Deactivated Successfully'),
 			error: __('Error Deactivating License'),
 			finally() {
-				queryClient.invalidateQueries({ queryKey: ['license/detail'] });
+				queryClient.invalidateQueries({ queryKey: [API.license.read] });
 			}
 		});
 	}, [deactivateAsync, queryClient, notify]);

@@ -60,6 +60,16 @@ class License extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'create' => [
+				'methods' => 'POST',
+				'callback' => [$this, 'activate_license'],
+			],
+			'read' => [
+				'callback' => [$this, 'detail'],
+			],
+			'delete' => [
+				'callback' => [$this, 'deactivate_license'],
+			],
 			'activate' => [
 				'methods' => 'POST',
 				'callback' => [$this, 'activate_license'],

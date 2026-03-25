@@ -1,3 +1,4 @@
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { TThemePluginItem } from '@/types/item';
 import { AutoupdatePostSchema } from '@/types/update';
@@ -18,18 +19,20 @@ export default function useAutoUpdate() {
 		isFetched,
 		isLoading,
 		isFetching
-	} = useApiFetch<SettingType>(`update/setting/get`);
+	} = useApiFetch<SettingType>(API.update.readSettings);
 	const queryClient = useQueryClient();
 
 	const clearCache = useCallback(() => {
 		queryClient.invalidateQueries({
-			queryKey: ['update/setting/get']
+			queryKey: [API.update.readSettings]
 		});
 	}, [queryClient]);
 	const { activated, active } = useActivation();
 	const notify = useNotification();
-	const { isPending: isPendingUpdate, mutateAsync: autoupdatePromise } =
-		useApiMutation<never, AutoupdatePostSchema>('update/update-autoupdate');
+	const { isPending: isPendingCreate, mutateAsync: autoupdateCreate } =
+		useApiMutation<never, AutoupdatePostSchema>(API.update.create);
+	const { isPending: isPendingDelete, mutateAsync: autoupdateDelete } =
+		useApiMutation<never, AutoupdatePostSchema>(API.update.delete);
 	const changeStatus = useCallback(
 		(item: TThemePluginItem, enabled: boolean = false) =>
 			new Promise((resolve, reject) => {
@@ -48,7 +51,7 @@ export default function useAutoUpdate() {
 					return;
 				}
 				notify.promise(
-					autoupdatePromise({
+					(enabled ? autoupdateCreate : autoupdateDelete)({
 						type: item.type,
 						slug: item.slug,
 						enabled: enabled
@@ -70,12 +73,19 @@ export default function useAutoUpdate() {
 					}
 				);
 			}),
-		[activated, active, autoupdatePromise, clearCache, notify]
+		[
+			activated,
+			active,
+			autoupdateCreate,
+			autoupdateDelete,
+			clearCache,
+			notify
+		]
 	);
 	return {
 		setting,
 		isFetched,
-		isLoading: isLoading || isPendingUpdate,
+		isLoading: isLoading || isPendingCreate || isPendingDelete,
 		isFetching,
 		clearCache,
 		changeStatus

@@ -2,24 +2,84 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @layer base {
 	:root {
-		--font-sans: 'Inter';
-		--font-heading: 'Bricolage Grotesque';
-		--radius: 0.5rem;
+		--font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+		--font-heading: "Bricolage Grotesque", system-ui, sans-serif;
 	}
 
+	@media (prefers-reduced-motion: reduce) {
+		:root {
+			--motion-duration-reveal: 0.01ms;
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		:root {
+			--motion-duration-reveal: 0.35s;
+		}
+	}
 }
+
 @layer base {
 	* {
 		@apply border-border;
 	}
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-background text-foreground antialiased;
 		font-synthesis-weight: none;
 		text-rendering: optimizeLegibility;
 	}
 }
+
+/* Staggered reveal: parent adds .gm-reveal-stagger; children fade/slide in when motion is OK */
+@layer utilities {
+	@media (prefers-reduced-motion: no-preference) {
+		.gm-reveal-stagger > * {
+			animation: gm-reveal var(--motion-duration-reveal, 0.35s) ease-out both;
+		}
+		.gm-reveal-stagger > *:nth-child(1) {
+			animation-delay: 0ms;
+		}
+		.gm-reveal-stagger > *:nth-child(2) {
+			animation-delay: 45ms;
+		}
+		.gm-reveal-stagger > *:nth-child(3) {
+			animation-delay: 90ms;
+		}
+		.gm-reveal-stagger > *:nth-child(4) {
+			animation-delay: 135ms;
+		}
+		.gm-reveal-stagger > *:nth-child(5) {
+			animation-delay: 180ms;
+		}
+		.gm-reveal-stagger > *:nth-child(6) {
+			animation-delay: 225ms;
+		}
+		.gm-reveal-stagger > *:nth-child(7) {
+			animation-delay: 270ms;
+		}
+		.gm-reveal-stagger > *:nth-child(8) {
+			animation-delay: 315ms;
+		}
+		.gm-reveal-stagger > *:nth-child(n + 9) {
+			animation-delay: 360ms;
+		}
+	}
+}
+
+@keyframes gm-reveal {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
 .item-description {
 	@apply space-y-4 whitespace-pre-wrap;
 	h2 {

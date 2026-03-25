@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import useActivation from '@/hooks/use-activation';
-import { __ } from '@/lib/i18n';
+import { __, sprintf } from '@/lib/i18n';
 import { TPostItem } from '@/types/item';
 import { Eye } from 'lucide-react';
+import moment from 'moment';
 import ItemRequestUpdate from './item-request-update';
 
 type Props = {
@@ -26,13 +27,15 @@ export default function DownloadCard({ item }: Props) {
 		<Card className="max-md:order-3">
 			<CardHeader className="flex flex-row items-center justify-between border-b">
 				<span className="font-semibold">{__('Download')}</span>
-				<div className="flex flex-wrap items-center justify-end gap-1">
-					<Badge
-						variant="outline"
-						className="text-muted-foreground"
-					>
-						{__('Download Now')}
-					</Badge>
+				<div className="flex flex-wrap items-center justify-end gap-1.5">
+					{item.version && (
+						<Badge
+							variant="secondary"
+							className="font-mono text-xs"
+						>
+							v{item.version}
+						</Badge>
+					)}
 				</div>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-4">
@@ -40,6 +43,7 @@ export default function DownloadCard({ item }: Props) {
 					<InstallButton
 						item={item}
 						variant="default"
+						size="lg"
 						className="min-w-0 flex-1"
 					/>
 					<DownloadButton
@@ -79,6 +83,14 @@ export default function DownloadCard({ item }: Props) {
 						/>
 					)}
 				</ButtonGroup>
+				{item.updated > 0 && (
+					<p className="text-center text-xs text-muted-foreground">
+						{sprintf(
+							__('Last updated %s'),
+							moment.unix(item.updated).fromNow()
+						)}
+					</p>
+				)}
 			</CardContent>
 		</Card>
 	);

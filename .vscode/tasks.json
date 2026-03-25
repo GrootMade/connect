@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "lint",
+			"type": "shell",
+			"command": "bun",
+			"args": [
+				"lint"
+			],
+			"isBackground": false
+		}
+	]
+}

@@ -1,5 +1,6 @@
 import { removeEmptyParams } from '@/lib/utils';
-import { Params, useNavigate, useParams } from '@/router';
+import type { Params } from '@/router';
+import { useNavigate, useParams } from '@/router';
 import { useCallback, useMemo } from '@wordpress/element';
 import { useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
@@ -65,12 +66,10 @@ const serializeQuery = (items: FilterState): Record<string, string> => {
 		])
 	);
 };
-type ParamsWith<T, Keys extends string[] = ['slug']> = {
-	[K in keyof T]: Keys extends (keyof T[K])[] ? K : never;
-}[keyof T];
 type useCollectionProps = {
 	options: FilterOption[];
-	path: ParamsWith<Params, ['slug']>; // Only need Params that has `slug` params
+	/** Route path with params (matches generouted `Params` keys). */
+	path: keyof Params;
 	sort: SortItem[];
 };
 export default function useDataCollection({
@@ -182,7 +181,17 @@ export default function useDataCollection({
 		});
 	}
 	function resetPage() {
-		navigate(path, { params: { slug: params.slug } });
+		const p = params as Record<string, string | undefined>;
+		const next: Record<string, string> = {};
+		for (const [k, v] of Object.entries(p)) {
+			if (v !== undefined && v !== '') {
+				next[k] = v;
+			}
+		}
+		if (path.includes(':page')) {
+			next.page = '1';
+		}
+		navigate(path, { params: next as never });
 	}
 
 	return {

@@ -8,6 +8,8 @@ export type StackedBarChartDataType = {
 };
 type StackedBarChartProps = {
 	data: StackedBarChartDataType[];
+	/** Narrower bar and tighter legend */
+	compact?: boolean;
 };
 
 export type StackedBarChartWithPosition = StackedBarChartDataType & {
@@ -48,11 +50,16 @@ function calculateStackedBarPositions(
 		return positionedItem;
 	});
 }
-const width = 300;
-const height = 10;
-const rounded = 5;
-const padding = 5;
-export function StackedBarChart({ data }: StackedBarChartProps) {
+const defaultDims = { width: 300, height: 10, rounded: 5, padding: 5 };
+const compactDims = { width: 220, height: 8, rounded: 4, padding: 4 };
+
+export function StackedBarChart({
+	data,
+	compact = false
+}: StackedBarChartProps) {
+	const { width, height, rounded, padding } = compact
+		? compactDims
+		: defaultDims;
 	const total = useMemo(
 		() => data.reduce((sum, item) => sum + item.value, 0),
 		[data]
@@ -62,7 +69,9 @@ export function StackedBarChart({ data }: StackedBarChartProps) {
 	}
 	const calculated = calculateStackedBarPositions(data, width, padding);
 	return (
-		<div className="flex flex-col gap-4">
+		<div
+			className={compact ? 'flex flex-col gap-2' : 'flex flex-col gap-4'}
+		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				viewBox={`0 0 ${width} ${height}`}
@@ -87,19 +96,31 @@ export function StackedBarChart({ data }: StackedBarChartProps) {
 					);
 				})}
 			</svg>
-			<div className="flex flex-row gap-4">
+			<div
+				className={
+					compact
+						? 'flex flex-row flex-wrap gap-2'
+						: 'flex flex-row gap-4'
+				}
+			>
 				{data.map((item) => (
 					<div
 						key={item.name}
 						className="flex items-center gap-2"
 					>
 						<span
-							className={`bg-chart block h-4 w-4 rounded-full`}
+							className={`bg-chart block rounded-full ${compact ? 'h-3 w-3' : 'h-4 w-4'}`}
 							style={{
 								background: item.color
 							}}
 						></span>
-						<div className="space-x-1 text-sm">
+						<div
+							className={
+								compact
+									? 'space-x-1 text-xs'
+									: 'space-x-1 text-sm'
+							}
+						>
 							<span>{item.value}</span>
 							<span className="text-muted-foreground">
 								{item.label}

@@ -14,6 +14,9 @@ class Disclaimer extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'read' => [
+				'callback' => [$this, 'get_disclaimer'],
+			],
 			'get' => [
 				'callback' => [$this, 'get_disclaimer'],
 			],

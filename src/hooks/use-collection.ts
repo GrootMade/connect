@@ -1,4 +1,5 @@
 import useApiMutation from '@/hooks/use-api-mutation';
+import { API } from '@/lib/api-endpoints';
 import { __, sprintf } from '@/lib/i18n';
 import { CollectionResponse, TApiError } from '@/types/api';
 import { BookmarkCollectionType } from '@/types/bookmark';
@@ -61,36 +62,36 @@ export default function useBookmark() {
 
 	const clearCache = useCallback(() => {
 		queryClient.invalidateQueries({
-			queryKey: ['collection/list']
+			queryKey: [API.collection.read]
 		});
 		queryClient.invalidateQueries({
-			queryKey: ['collection/items']
+			queryKey: [API.collection.readItems]
 		});
 		queryClient.invalidateQueries({
-			queryKey: ['item/list']
+			queryKey: [API.item.readList]
 		});
 		queryClient.invalidateQueries({
-			queryKey: ['item/detail']
+			queryKey: [API.item.readDetail]
 		});
 	}, [queryClient]);
 	const { mutateAsync: addItemAsync } = useApiMutation<
 		Record<string, string>,
 		z.infer<typeof BookmarkItemSchema>,
 		TApiError
-	>('collection/item/add');
+	>(API.collection.createItem);
 	const { mutateAsync: removeCollectionAsync } = useApiMutation<
 		Record<string, string>,
 		Pick<z.infer<typeof BookmarkPostCollectionSchema>, 'id'>,
 		TApiError
-	>('collection/delete');
+	>(API.collection.delete);
 	const { mutateAsync: addCollectionAsync } = useApiMutation<
 		Record<string, string>,
 		z.infer<typeof BookmarkPostCollectionSchema>,
 		TApiError
-	>('collection/add');
+	>(API.collection.create);
 	const { data: collections } = useApiFetch<
 		CollectionResponse<BookmarkCollectionType>
-	>('collection/list', null, activated);
+	>(API.collection.read, null, activated);
 	const addItemToCollection = useCallback(
 		(item: TPostItem, collection: BookmarkCollectionType) =>
 			new Promise((resolve, reject) => {

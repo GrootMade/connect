@@ -15,6 +15,7 @@ import useApiMutation from '@/hooks/use-api-mutation';
 import { PluginInstallResponse } from '@/hooks/use-install';
 import useInstalled from '@/hooks/use-is-installed';
 import useNotification from '@/hooks/use-notification';
+import { API } from '@/lib/api-endpoints';
 import { claimAfterDelay } from '@/lib/download-delay';
 import { __, sprintf } from '@/lib/i18n';
 import { useNavigate } from '@/router';
@@ -44,7 +45,7 @@ export default function AdditionalDownloadButton({
 	const { data: activation, active, activated } = useActivation();
 	const { isPending: isInstallPending, mutateAsync: downloadAdditional } =
 		useApiMutation<PluginInstallResponse, AdditionalContentDownloadSchema>(
-			'item/download-additional'
+			API.item.downloadAdditional
 		);
 
 	const { clearCache } = useInstalled();

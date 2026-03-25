@@ -5,6 +5,7 @@ import InstallButton from '@/components/install-button';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Skeleton } from '@/components/ui/skeleton';
+import { archiveItemCoverSrc } from '@/lib/archive-item-cover';
 import { __ } from '@/lib/i18n';
 import { TypeToItemType } from '@/lib/type-to-slug';
 import { TPostItem } from '@/types/item';
@@ -44,6 +45,9 @@ const cardClass =
 export function PostGridItemSkeleton() {
 	return (
 		<div className={`${cardClass} select-none items-stretch`}>
+			<div className="-mx-5 -mt-5 mb-0 w-[calc(100%+2.5rem)] overflow-hidden rounded-t-lg">
+				<Skeleton className="aspect-[16/9] w-full rounded-none" />
+			</div>
 			<div className="flex w-full flex-row flex-wrap items-center gap-x-3 gap-y-2">
 				<Skeleton className="h-8 w-8 shrink-0 rounded-md" />
 				<div className="w-2/3 text-base font-semibold">
@@ -85,6 +89,8 @@ export default function PostGridItem({ item, style }: Props) {
 
 	const updatedAt = item.updated ? moment.unix(item.updated).fromNow() : '—';
 
+	const coverSrc = archiveItemCoverSrc(item);
+
 	const insights = [
 		{
 			label: __('Version'),
@@ -117,6 +123,14 @@ export default function PostGridItem({ item, style }: Props) {
 				to={detailUrl}
 				className="contents text-card-foreground no-underline"
 			>
+				<div className="-mx-5 -mt-5 mb-0 w-[calc(100%+2.5rem)] overflow-hidden rounded-t-lg">
+					<img
+						src={coverSrc}
+						alt={decodeEntities(item.title)}
+						className="aspect-[16/9] w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+						loading="lazy"
+					/>
+				</div>
 				<div className="flex w-full flex-row flex-wrap items-center gap-x-3 gap-y-2">
 					<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-accent p-1.5 text-muted-foreground">
 						<TypeIcon type={item.type} />

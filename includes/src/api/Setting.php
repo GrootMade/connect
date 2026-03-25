@@ -10,6 +10,83 @@ class Setting extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'read' => [
+				'callback' => [$this, 'get_setting'],
+				'permission_callback' => [$this, 'user_is_adminstrator'],
+			],
+			'read/roles' => [
+				'callback' => [$this, 'get_roles'],
+				'permission_callback' => [$this, 'user_is_adminstrator'],
+			],
+			'update' => [
+				'callback' => [$this, 'update_setting'],
+				'permission_callback' => [$this, 'user_is_adminstrator'],
+				'args' => [
+					'autoactivate' => [
+						'required' => false,
+						'validate_callback' => function (
+							$param,
+							$request,
+							$key
+						) {
+							return is_bool($param);
+						},
+					],
+					'autoupdate_day_of_week' => [
+						'required' => false,
+						'validate_callback' => function (
+							$param,
+							$request,
+							$key
+						) {
+							return is_array($param);
+						},
+					],
+					'autoupdate_hour' => [
+						'required' => false,
+						'validate_callback' => function (
+							$param,
+							$request,
+							$key
+						) {
+							return is_numeric($param) &&
+								($param >= 0) & ($param <= 23);
+						},
+					],
+					'autoupdate_minute' => [
+						'required' => false,
+						'validate_callback' => function (
+							$param,
+							$request,
+							$key
+						) {
+							return is_numeric($param) &&
+								($param >= 0) & ($param <= 59);
+						},
+					],
+					'clean_on_uninstall' => [
+						'required' => false,
+						'validate_callback' => function (
+							$param,
+							$request,
+							$key
+						) {
+							return is_bool($param);
+						},
+					],
+
+					'roles' => [
+						'required' => true,
+						'validate_callback' => function (
+							$param,
+							$request,
+							$key
+						) {
+							return is_array($param);
+						},
+					],
+				],
+			],
 			'get' => [
 				'callback' => [$this, 'get_setting'],
 				'permission_callback' => [$this, 'user_is_adminstrator'],

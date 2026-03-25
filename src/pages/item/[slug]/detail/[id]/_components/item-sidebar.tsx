@@ -1,7 +1,5 @@
-import AdCard from '@/components/ad-card';
 import { __ } from '@/lib/i18n';
 import { TPostItem } from '@/types/item';
-import DownloadCard from './download-card';
 import ItemDetail from './item-detail';
 import ItemDisclaimer from './item-disclaimer';
 import ItemTerms from './item-terms';
@@ -12,10 +10,8 @@ type Props = {
 };
 export default function ItemSidebar({ item }: Props) {
 	return (
-		<div className="sticky top-0 flex flex-col gap-5 max-md:contents sm:gap-7">
-			<DownloadCard item={item} />
+		<div className="sticky top-20 flex flex-col gap-5 sm:gap-7">
 			<ItemDetail item={item} />
-			<AdCard />
 			<VirusTotalScan item={item} />
 			<ItemDisclaimer item={item} />
 			<ItemTerms

@@ -1,3 +1,4 @@
+import { API } from '@/lib/api-endpoints';
 import { TItemTypeEnum, TTerm, TTermCollectionResponse } from '@/types/item';
 import { useCallback, useEffect, useState } from '@wordpress/element';
 import useApiFetch from './use-api-fetch';
@@ -8,7 +9,7 @@ export default function useGetTerms(type: TItemTypeEnum) {
 	const [cursor, setCursor] = useState<string>(null);
 
 	const { data, isPending } = useApiFetch<TTermCollectionResponse>(
-		'item/terms',
+		API.item.terms,
 		{ cursor, type }
 	);
 	const getData = useCallback(() => {

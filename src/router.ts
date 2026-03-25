@@ -6,7 +6,7 @@ import { components, hooks, utils } from '@generouted/react-router/client';
 export type Path =
 	| `/`
 	| `/activation`
-	| `/browse`
+	| `/browse/:page?`
 	| `/collection`
 	| `/collection/:cid/:page?`
 	| `/history/:page?`
@@ -18,6 +18,7 @@ export type Path =
 	| `/updates`;
 
 export type Params = {
+	'/browse/:page?': { page?: string };
 	'/collection/:cid/:page?': { cid: string; page?: string };
 	'/history/:page?': { page?: string };
 	'/item/:slug/:page?': { slug: string; page?: string };

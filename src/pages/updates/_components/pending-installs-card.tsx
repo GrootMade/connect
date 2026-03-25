@@ -1,14 +1,11 @@
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader
-} from '@/components/ui/card';
 import useApiMutation from '@/hooks/use-api-mutation';
 import useNotification from '@/hooks/use-notification';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from '@wordpress/element';
+import { CloudDownload } from 'lucide-react';
 
 type PendingInstallStatus = {
 	last_check: {
@@ -27,9 +24,9 @@ type CheckNowResponse = {
 export default function PendingInstallsCard() {
 	const notify = useNotification();
 	const { mutateAsync: checkNow, isPending: isChecking } =
-		useApiMutation<CheckNowResponse>('pending-install/check-now');
+		useApiMutation<CheckNowResponse>(API.pendingInstall.create);
 	const { mutateAsync: getStatus } = useApiMutation<PendingInstallStatus>(
-		'pending-install/status'
+		API.pendingInstall.read
 	);
 	const [status, setStatus] = useState<PendingInstallStatus | null>(null);
 
@@ -50,7 +47,6 @@ export default function PendingInstallsCard() {
 		try {
 			const result = await checkNow({});
 			notify.success(result.message);
-			// Refresh status after check
 			await fetchStatus();
 		} catch {
 			notify.error(__('Failed to check for pending installs'));
@@ -63,66 +59,29 @@ export default function PendingInstallsCard() {
 	};
 
 	return (
-		<Card>
-			<CardHeader className="border-b">
-				{__('Remote Installs')}
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4 pt-4">
-				<p className="text-sm text-muted-foreground">
-					{__(
-						'Items queued for remote installation from the web dashboard will be checked every 5 minutes. Use the button below to check immediately.'
-					)}
-				</p>
-				{status?.last_check && (
-					<div className="flex flex-col gap-2 rounded-lg border p-3 text-sm">
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">
-								{__('Last checked')}
-							</span>
-							<span>
-								{formatTimestamp(status.last_check.time)}
-							</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">
-								{__('Items found')}
-							</span>
-							<span>{status.last_check.count}</span>
-						</div>
-						{status.last_check.error && (
-							<div className="flex justify-between">
-								<span className="text-muted-foreground">
-									{__('Note')}
-								</span>
-								<span className="text-orange-500">
-									{status.last_check.error}
-								</span>
-							</div>
-						)}
-						{status.next_scheduled && (
-							<div className="flex justify-between">
-								<span className="text-muted-foreground">
-									{__('Next check')}
-								</span>
-								<span>
-									{formatTimestamp(
-										status.next_scheduled as number
-									)}
-								</span>
-							</div>
-						)}
+		<Alert>
+			<CloudDownload className="h-4 w-4" />
+			<AlertTitle>{__('Remote Installs')}</AlertTitle>
+			<AlertDescription>
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<div className="text-sm text-muted-foreground">
+						{status?.last_check
+							? `${__('Last checked')}: ${formatTimestamp(status.last_check.time)} · ${status.last_check.count} ${__('items found')}`
+							: __(
+									'Items queued for remote installation will be checked every 5 minutes.'
+								)}
 					</div>
-				)}
-			</CardContent>
-			<CardFooter className="border-t pt-4">
-				<Button
-					onClick={handleCheckNow}
-					disabled={isChecking}
-					size="sm"
-				>
-					{isChecking ? __('Checking...') : __('Check Now')}
-				</Button>
-			</CardFooter>
-		</Card>
+					<Button
+						onClick={handleCheckNow}
+						disabled={isChecking}
+						size="sm"
+						variant="outline"
+						className="shrink-0 self-start sm:self-auto"
+					>
+						{isChecking ? __('Checking...') : __('Check Now')}
+					</Button>
+				</div>
+			</AlertDescription>
+		</Alert>
 	);
 }

@@ -4,6 +4,7 @@ import {
 	AccordionItem,
 	AccordionTrigger
 } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
 import { type ButtonProps, buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -17,15 +18,19 @@ import { cn, isLinkActive } from '@/lib/utils';
 import { memo, useMemo } from '@wordpress/element';
 import { type VariantProps } from 'class-variance-authority';
 import { ChevronDown, ExternalLinkIcon } from 'lucide-react';
+import millify from 'millify';
 import { Link, useLocation } from 'react-router-dom';
 import BulkAction from '../bulk-action';
-import ModeToggle from '../mode-toggle';
 
 type LinkStyleProps = {
 	active?: boolean;
 	disabled?: boolean;
 	className?: string;
 } & VariantProps<typeof buttonVariants>;
+
+function formatSidebarCount(n: number) {
+	return millify(n, { precision: n >= 1000 ? 1 : 0, lowercase: true });
+}
 
 function linkStyle({ active, disabled, className, ...props }: LinkStyleProps) {
 	return cn(
@@ -34,16 +39,18 @@ function linkStyle({ active, disabled, className, ...props }: LinkStyleProps) {
 			size: props.size,
 			...props
 		}),
-		'flex h-8 w-full items-center justify-start gap-3 px-3',
+		'flex h-9 w-full items-center justify-start gap-3 rounded-md px-3 text-sm transition-colors',
 		disabled && 'pointer-events-none opacity-50',
 		className
 	);
 }
 
-export function SidebarNav() {
-	const isCollapsed = false;
+type SidebarNavProps = {
+	isCollapsed?: boolean;
+};
 
-	const { pathname } = useLocation();
+export function SidebarNav({ isCollapsed = false }: SidebarNavProps) {
+	const { pathname, search } = useLocation();
 	const { items } = useSidebar();
 
 	// Memoize the useNotice functions for each item to ensure stability
@@ -64,13 +71,12 @@ export function SidebarNav() {
 		>
 			<nav className="flex flex-col gap-4">
 				<div className="flex flex-row gap-2 lg:hidden">
-					<ModeToggle />
 					<BulkAction />
 				</div>
 				{memoizedItems.map((nav, index) => (
 					<div key={nav.id}>
-						{nav.showLabel && (
-							<h3 className="mb-2 px-2 pt-3 text-xs font-semibold uppercase text-muted-foreground">
+						{nav.showLabel && !isCollapsed && (
+							<h3 className="mb-2 px-2 pt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
 								{nav.label}
 							</h3>
 						)}
@@ -89,7 +95,8 @@ export function SidebarNav() {
 												item.subMenu.find((subItem) =>
 													isLinkActive(
 														pathname,
-														subItem.href
+														subItem.href,
+														search
 													)
 												)
 													? item.label
@@ -158,7 +165,8 @@ export function SidebarNav() {
 																		{...subItem}
 																		active={isLinkActive(
 																			pathname,
-																			subItem.href
+																			subItem.href,
+																			search
 																		)}
 																		isCollapsed={
 																			isCollapsed
@@ -195,7 +203,8 @@ export function SidebarNav() {
 													{...item}
 													active={isLinkActive(
 														pathname,
-														item.href
+														item.href,
+														search
 													)}
 													isCollapsed={isCollapsed}
 													useNotice={item.useNotice} // Pass the memoized useNotice
@@ -204,9 +213,20 @@ export function SidebarNav() {
 											{isCollapsed && (
 												<TooltipContent
 													side="right"
-													className="flex items-center gap-4 font-medium"
+													className="flex max-w-xs flex-wrap items-center gap-2 font-medium"
 												>
-													{item.label}
+													<span>{item.label}</span>
+													{'href' in item &&
+														typeof item.count ===
+															'number' && (
+															<span className="tabular-nums text-muted-foreground">
+																(
+																{formatSidebarCount(
+																	item.count
+																)}
+																)
+															</span>
+														)}
 												</TooltipContent>
 											)}
 										</Tooltip>
@@ -216,7 +236,7 @@ export function SidebarNav() {
 						</ul>
 
 						{index !== memoizedItems.length - 1 && (
-							<Separator className="my-2" />
+							<Separator className="my-3 opacity-60" />
 						)}
 					</div>
 				))}
@@ -243,6 +263,7 @@ function NavLink({
 	size = 'default',
 	isCollapsed,
 	external,
+	count,
 	useNotice: Notice
 }: NavLinkProps) {
 	const isExternal = href?.startsWith('http') ?? external;
@@ -256,14 +277,26 @@ function NavLink({
 				)}
 			/>
 			{!isCollapsed && (
-				<span className="flex-grow truncate text-left">{label}</span>
-			)}
-			{isExternal && (
-				<span className="text-muted-foreground">
-					<ExternalLinkIcon className="ml-2 h-3 w-3" />
+				<span className="min-w-0 flex-1 truncate text-left">
+					{label}
 				</span>
 			)}
-			{Notice && <Notice />}
+			{isExternal && (
+				<span className="shrink-0 text-muted-foreground">
+					<ExternalLinkIcon className="ml-1 h-3 w-3" />
+				</span>
+			)}
+			{!isCollapsed && typeof count === 'number' && (
+				<Badge
+					variant="secondary"
+					size="sm"
+					className="ml-1.5 shrink-0 font-normal tabular-nums text-muted-foreground"
+					title={String(count)}
+				>
+					{formatSidebarCount(count)}
+				</Badge>
+			)}
+			{Notice ? <Notice /> : null}
 		</>
 	);
 	if (as === 'link') {

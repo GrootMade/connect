@@ -29,15 +29,16 @@ export default function AutoupdateSetting() {
 
 	return (
 		!!settings && (
-			<Card>
-				<CardHeader>
-					<CardTitle>{__('Auto Update')}</CardTitle>
+			<Card className="overflow-hidden">
+				<CardHeader className="border-b border-border/80 bg-muted/30">
+					<CardTitle className="text-base font-semibold">
+						{__('Auto Update')}
+					</CardTitle>
 					<CardDescription>
 						{__('Configure automatic update schedule.')}
 					</CardDescription>
 				</CardHeader>
-				<Separator />
-				<CardContent className="flex flex-col">
+				<CardContent className="flex flex-col pt-6">
 					<SettingControl
 						label={__('Days of Week')}
 						description={__(

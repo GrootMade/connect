@@ -1,98 +1,80 @@
+import BulkButton from '@/components/bulk-button';
+import CollectionButton from '@/components/collection-button';
+import DownloadButton from '@/components/download-button';
+import InstallButton from '@/components/install-button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import useActivation from '@/hooks/use-activation';
+import { __ } from '@/lib/i18n';
 import { TPostItem } from '@/types/item';
 import { decodeEntities } from '@wordpress/html-entities';
-import { LayoutTemplate, Paintbrush, Plug } from 'lucide-react';
+import { Eye, LayoutTemplate, Paintbrush, Plug } from 'lucide-react';
+import ItemRequestUpdate from './item-request-update';
 
 export function ItemDetailHeaderSkeleton() {
 	return (
-		<div className="grid gap-6 md:grid-cols-3 lg:gap-8">
-			{/* Content column */}
-			<div className="flex flex-col gap-5 sm:gap-7 md:col-span-2">
-				{/* Header skeleton */}
-				<div className="flex items-center gap-3 rounded-lg border bg-background/80 p-3">
+		<div className="flex flex-col gap-7 lg:gap-10">
+			<div className="flex flex-col gap-4 rounded-lg border bg-background/80 p-4 sm:flex-row sm:items-center sm:gap-3">
+				<div className="flex min-w-0 flex-1 items-center gap-3">
 					<Skeleton className="size-8 rounded-md" />
 					<Skeleton className="h-5 w-52" />
-					<Skeleton className="ml-auto hidden h-4 w-16 sm:block" />
+					<Skeleton className="ml-2 hidden h-5 w-16 rounded-full sm:block" />
 				</div>
-
-				{/* Forked-from skeleton */}
-				<div className="flex flex-col gap-4">
-					<div className="flex items-center gap-3 rounded-lg border bg-accent/40 px-4 py-3">
-						<div className="flex flex-col gap-1.5">
-							<Skeleton className="h-3 w-20" />
-							<Skeleton className="h-4 w-36" />
-						</div>
-					</div>
-					<Skeleton className="h-3 w-full" />
-					<Skeleton className="h-3 w-3/4" />
-				</div>
-
-				{/* Image skeleton */}
-				<Skeleton className="aspect-[16/9] w-full rounded-lg" />
-
-				{/* Description skeleton */}
-				<Card>
-					<CardHeader className="border-b p-5 sm:p-7">
-						<Skeleton className="h-4 w-28" />
-					</CardHeader>
-					<CardContent className="space-y-3 p-5 sm:p-7">
-						<Skeleton className="h-3 w-full" />
-						<Skeleton className="h-3 w-full" />
-						<Skeleton className="h-3 w-4/5" />
-						<Skeleton className="h-3 w-full" />
-						<Skeleton className="h-3 w-2/3" />
-					</CardContent>
-				</Card>
+				<Skeleton className="h-9 w-full sm:w-64" />
 			</div>
 
-			{/* Sidebar column */}
-			<div className="flex flex-col gap-5 sm:gap-7 md:col-span-1">
-				{/* Download card skeleton */}
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between border-b">
-						<Skeleton className="h-4 w-24" />
-						<Skeleton className="h-5 w-28 rounded-full" />
-					</CardHeader>
-					<CardContent className="flex flex-col gap-4">
-						<Skeleton className="h-9 w-full rounded" />
-					</CardContent>
-				</Card>
-
-				{/* Stats skeleton */}
-				<div className="rounded-lg border p-5">
-					<ul className="space-y-2">
-						{Array.from({ length: 6 }).map((_, i) => (
-							<li
-								key={i}
-								className="flex items-center gap-3 py-1"
-							>
-								<Skeleton className="size-4 rounded" />
-								<Skeleton className="h-3 w-20" />
-								<hr className="min-w-2 flex-1" />
-								<Skeleton className="h-3 w-16" />
-							</li>
-						))}
-					</ul>
+			{/* Content + sidebar skeleton */}
+			<div className="grid gap-7 md:grid-cols-3 lg:gap-10">
+				<div className="flex flex-col gap-5 sm:gap-7 md:col-span-2">
+					<Card>
+						<CardHeader className="border-b p-5 sm:p-7">
+							<Skeleton className="h-4 w-28" />
+						</CardHeader>
+						<CardContent className="space-y-3 p-5 sm:p-7">
+							<Skeleton className="h-3 w-full" />
+							<Skeleton className="h-3 w-full" />
+							<Skeleton className="h-3 w-4/5" />
+							<Skeleton className="h-3 w-full" />
+							<Skeleton className="h-3 w-2/3" />
+						</CardContent>
+					</Card>
 				</div>
-
-				{/* VirusTotal skeleton */}
-				<div className="rounded-lg border p-5">
-					<div className="space-y-3">
-						<Skeleton className="h-2 w-full rounded-full" />
+				<div className="flex flex-col gap-5 sm:gap-7 md:col-span-1">
+					<div className="rounded-lg border p-5">
 						<ul className="space-y-2">
-							{Array.from({ length: 4 }).map((_, i) => (
+							{Array.from({ length: 6 }).map((_, i) => (
 								<li
 									key={i}
 									className="flex items-center gap-3 py-1"
 								>
 									<Skeleton className="size-4 rounded" />
-									<Skeleton className="h-3 w-24" />
+									<Skeleton className="h-3 w-20" />
 									<hr className="min-w-2 flex-1" />
-									<Skeleton className="h-3 w-12" />
+									<Skeleton className="h-3 w-16" />
 								</li>
 							))}
 						</ul>
+					</div>
+					<div className="rounded-lg border p-5">
+						<div className="space-y-3">
+							<Skeleton className="h-2 w-full rounded-full" />
+							<ul className="space-y-2">
+								{Array.from({ length: 4 }).map((_, i) => (
+									<li
+										key={i}
+										className="flex items-center gap-3 py-1"
+									>
+										<Skeleton className="size-4 rounded" />
+										<Skeleton className="h-3 w-24" />
+										<hr className="min-w-2 flex-1" />
+										<Skeleton className="h-3 w-12" />
+									</li>
+								))}
+							</ul>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -119,20 +101,72 @@ type Props = {
 	item: TPostItem;
 };
 export default function ItemDetailHeader({ item }: Props) {
-	return (
-		<div className="sticky top-0 z-10 flex items-center gap-3 rounded-lg border bg-background/80 p-3 backdrop-blur-sm max-md:order-1">
-			<TypeIcon type={item.type} />
+	const { activated, active } = useActivation();
+	const isRequest = item.type === 'request';
 
-			<div className="flex min-w-0 flex-1 items-center gap-2">
+	return (
+		<div className="sticky top-0 z-10 flex flex-col gap-3 rounded-lg border bg-background/80 p-4 backdrop-blur-sm sm:flex-row sm:items-center sm:gap-4">
+			<div className="flex min-w-0 flex-1 items-center gap-3">
+				<TypeIcon type={item.type} />
 				<h1 className="truncate text-lg font-semibold leading-tight">
 					{decodeEntities(item.title)}
 				</h1>
-				{item.version && item.type !== 'request' && (
-					<span className="shrink-0 text-base text-muted-foreground">
+				{item.version && !isRequest && (
+					<Badge
+						variant="secondary"
+						className="shrink-0 font-mono text-xs"
+					>
 						v{item.version}
-					</span>
+					</Badge>
 				)}
 			</div>
+
+			{!isRequest && (
+				<ButtonGroup className="shrink-0">
+					<InstallButton
+						item={item}
+						variant="default"
+						size="sm"
+						className="min-w-0 flex-1 sm:flex-initial"
+					/>
+					<DownloadButton
+						item={item}
+						variant="secondary"
+						size="sm"
+					/>
+					<BulkButton
+						item={item}
+						size="sm"
+					/>
+					<CollectionButton
+						item={item}
+						size="sm"
+					/>
+					{item.product_url && item.product_url.length > 0 && (
+						<Button
+							variant="secondary"
+							size="sm"
+							asChild
+						>
+							<a
+								href={item.product_url}
+								target="_blank"
+								rel="noreferrer"
+								title={__('View Original Product Page')}
+							>
+								<Eye className="h-4 w-4" />
+							</a>
+						</Button>
+					)}
+					{activated && active && (
+						<ItemRequestUpdate
+							item={item}
+							variant="secondary"
+							size="sm"
+						/>
+					)}
+				</ButtonGroup>
+			)}
 		</div>
 	);
 }

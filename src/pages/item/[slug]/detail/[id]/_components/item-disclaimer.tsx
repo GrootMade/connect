@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import useApiFetch from '@/hooks/use-api-fetch';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import renderHtml from '@/lib/render-html';
 import { DisclaimerType } from '@/types/disclaimer';
@@ -11,7 +12,7 @@ type Props = {
 };
 export default function ItemDisclaimer({ item }: Props) {
 	const { data } = useApiFetch<DisclaimerType>(
-		'disclaimer/get',
+		API.disclaimer.read,
 		{},
 		!!item.copyright === false
 	);

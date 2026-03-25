@@ -14,6 +14,26 @@ class Update extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'read' => [
+				'callback' => [$this, 'list'],
+				'permission_callback' => [$this, 'user_can_install'],
+			],
+			'read/settings' => [
+				'callback' => [$this, 'get_setting'],
+				'permission_callback' => [$this, 'user_can_install'],
+			],
+			'create' => [
+				'callback' => [$this, 'create_autoupdate'],
+				'permission_callback' => [$this, 'user_can_install'],
+			],
+			'update' => [
+				'callback' => [$this, 'update_autoupdate'],
+				'permission_callback' => [$this, 'user_can_install'],
+			],
+			'delete' => [
+				'callback' => [$this, 'delete_autoupdate'],
+				'permission_callback' => [$this, 'user_can_install'],
+			],
 			'list' => [
 				'callback' => [$this, 'list'],
 				'permission_callback' => [$this, 'user_can_install'],
@@ -48,10 +68,34 @@ class Update extends ApiBase
 
 	public function update_autoupdate(\WP_REST_Request $request)
 	{
+		return $this->persist_autoupdate(
+			$request->get_param('type'),
+			$request->get_param('slug'),
+			$request->get_param('enabled')
+		);
+	}
+
+	public function create_autoupdate(\WP_REST_Request $request)
+	{
+		return $this->persist_autoupdate(
+			$request->get_param('type'),
+			$request->get_param('slug'),
+			true
+		);
+	}
+
+	public function delete_autoupdate(\WP_REST_Request $request)
+	{
+		return $this->persist_autoupdate(
+			$request->get_param('type'),
+			$request->get_param('slug'),
+			false
+		);
+	}
+
+	private function persist_autoupdate($type, $slug, $enabled)
+	{
 		$types = ['theme', 'plugin'];
-		$type = $request->get_param('type');
-		$slug = $request->get_param('slug');
-		$enabled = $request->get_param('enabled');
 		if (!in_array($type, $types)) {
 			return new \WP_Error(400, 'Error enabling auto-update');
 		}

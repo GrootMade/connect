@@ -19,6 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import useApiMutation from '@/hooks/use-api-mutation';
 import useNotification from '@/hooks/use-notification';
+import { API } from '@/lib/api-endpoints';
 import { __ } from '@/lib/i18n';
 import { TApiError } from '@/types/api';
 import { TPostItem } from '@/types/item';
@@ -106,7 +107,7 @@ export default function ItemRequestUpdate({ item, ...buttonProps }: Props) {
 			version: currentVersion
 		}
 	});
-	const { isPending, mutateAsync } = useApiMutation('item/request-update');
+	const { isPending, mutateAsync } = useApiMutation(API.item.requestUpdate);
 	const canRequestUpdate =
 		Number.isFinite(parsedItemId) &&
 		parsedItemId > 0 &&

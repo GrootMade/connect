@@ -1,3 +1,4 @@
+import { API } from '@/lib/api-endpoints';
 import version_compare from '@/lib/version_compare';
 import { CollectionResponse } from '@/types/api';
 import { TThemePluginItem } from '@/types/item';
@@ -6,8 +7,9 @@ import { useCallback, useMemo } from '@wordpress/element';
 import useApiFetch from './use-api-fetch';
 
 export default function useInstalled() {
-	const { data, isFetched, isLoading } =
-		useApiFetch<CollectionResponse<TThemePluginItem>>(`update/list`);
+	const { data, isFetched, isLoading } = useApiFetch<
+		CollectionResponse<TThemePluginItem>
+	>(API.update.read);
 	const queryClient = useQueryClient();
 	const updateable = useMemo(
 		() =>
@@ -23,7 +25,7 @@ export default function useInstalled() {
 	);
 	const clearCache = useCallback(() => {
 		queryClient.invalidateQueries({
-			queryKey: ['update/list']
+			queryKey: [API.update.read]
 		});
 	}, [queryClient]);
 	return { list: data?.data, isLoading, isFetched, updateable, clearCache };

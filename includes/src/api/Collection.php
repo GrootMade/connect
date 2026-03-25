@@ -51,6 +51,25 @@ class Collection extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'read' => [
+				'methods' => 'POST',
+				'callback' => [$this, 'list_collection'],
+			],
+			'read/detail' => [
+				'callback' => [$this, 'collection_detail'],
+			],
+			'read/items' => [
+				'callback' => [$this, 'list_items'],
+			],
+			'create' => [
+				'callback' => [$this, 'add_collection'],
+			],
+			'create/item' => [
+				'callback' => [$this, 'add_item'],
+			],
+			'delete' => [
+				'callback' => [$this, 'collection_delete'],
+			],
 			'list' => [
 				'methods' => 'POST',
 				'callback' => [$this, 'list_collection'],

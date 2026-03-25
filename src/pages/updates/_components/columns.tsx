@@ -1,6 +1,8 @@
 import InstallButton from '@/components/install-button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { archiveItemCoverSrc } from '@/lib/archive-item-cover';
 import { __, sprintf } from '@/lib/i18n';
 import { TypeToItemType, TypeToSlug } from '@/lib/type-to-slug';
 import version_compare from '@/lib/version_compare';
@@ -8,6 +10,7 @@ import { Link } from '@/router';
 import { TThemePluginItem } from '@/types/item';
 import { type ColumnDef } from '@tanstack/react-table';
 import { decodeEntities } from '@wordpress/html-entities';
+import { ArrowRight } from 'lucide-react';
 import AutoUpdateSwitcher from './autoupdate-switch';
 
 export function getColumns(): ColumnDef<TThemePluginItem>[] {
@@ -43,42 +46,42 @@ export const columns: ColumnDef<TThemePluginItem>[] = [
 	},
 	{
 		accessorKey: 'title',
-		header: () => <span className="pl-2">{__('Download')}</span>,
+		header: () => <span className="pl-2">{__('Item')}</span>,
 		id: 'title',
 		cell: ({ row }) => {
 			return (
-				<div className="flex flex-row gap-4">
-					<div className="aspect-square w-12">
-						<img
-							src={row.original.thumbnail ?? row.original.image}
-							className="aspect-square h-12 w-12 rounded-sm object-cover"
+				<div className="flex items-center gap-3 py-0.5">
+					<Avatar className="h-8 w-8 shrink-0 rounded-md">
+						<AvatarImage
+							src={archiveItemCoverSrc(row.original)}
+							alt={decodeEntities(row.original.title)}
 						/>
-					</div>
-					<div className=" flex-1 space-y-1">
-						<div className="font-semibold">
-							<div className="line-clamp-1">
-								<Link
-									to={`/item/:slug/detail/:id/:tab?`}
-									params={{
-										id: String(row.original.id),
-										slug: TypeToSlug(row.original.type)
-									}}
-								>
-									{decodeEntities(row.original.title)}
-								</Link>
-							</div>
+						<AvatarFallback className="rounded-md text-[10px]">
+							{decodeEntities(row.original.title)
+								.slice(0, 2)
+								.toUpperCase()}
+						</AvatarFallback>
+					</Avatar>
+					<div className="flex min-w-0 flex-col gap-1">
+						<div className="line-clamp-1 font-semibold">
+							<Link
+								to={`/item/:slug/detail/:id/:tab?`}
+								params={{
+									id: String(row.original.id),
+									slug: TypeToSlug(row.original.type)
+								}}
+							>
+								{decodeEntities(row.original.title)}
+							</Link>
 						</div>
-						<div className="text-muted-foreground">
-							<div className="line-clamp-1">
+						{row.original.original_title && (
+							<div className="line-clamp-1 text-xs text-muted-foreground">
 								{sprintf(
 									__('Forked From: %s'),
 									decodeEntities(row.original.original_title)
 								)}
 							</div>
-						</div>
-						<div className="text-muted-foreground">
-							{sprintf(__('Slug: %s'), row.original.slugs[0])}
-						</div>
+						)}
 					</div>
 				</div>
 			);
@@ -89,7 +92,14 @@ export const columns: ColumnDef<TThemePluginItem>[] = [
 		header: __('Type'),
 		cell: ({ row }) => {
 			const item_type = TypeToItemType(row.original.type);
-			return item_type?.label_singular;
+			return (
+				<Badge
+					variant="outline"
+					className="text-xs capitalize"
+				>
+					{item_type?.label_singular}
+				</Badge>
+			);
 		},
 		filterFn: (row, id, value) => {
 			return !!value.includes(row.original.type);
@@ -98,21 +108,7 @@ export const columns: ColumnDef<TThemePluginItem>[] = [
 
 	{
 		accessorKey: 'installed_version',
-		header: __('Installed Version'),
-		cell: ({ row }) => {
-			return (
-				<Badge
-					variant="secondary"
-					className="capitalize"
-				>
-					{row.original.installed_version}
-				</Badge>
-			);
-		}
-	},
-	{
-		accessorKey: 'version',
-		header: __('Available'),
+		header: __('Version'),
 		cell: ({ row }) => {
 			const isNew = version_compare(
 				row.original.version,
@@ -120,15 +116,23 @@ export const columns: ColumnDef<TThemePluginItem>[] = [
 				'gt'
 			);
 			return (
-				<Badge
-					variant={isNew ? 'success' : 'secondary'}
-					className="capitalize"
-				>
-					{row.original.version}
-				</Badge>
+				<div className="flex items-center gap-1.5">
+					<Badge
+						variant="secondary"
+						className="font-mono capitalize"
+					>
+						{row.original.installed_version}
+					</Badge>
+					<ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+					<Badge
+						variant={isNew ? 'success' : 'secondary'}
+						className="font-mono capitalize"
+					>
+						{row.original.version}
+					</Badge>
+				</div>
 			);
-		},
-		enableSorting: true
+		}
 	},
 	{
 		accessorKey: 'autoupdate',

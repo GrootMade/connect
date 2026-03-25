@@ -19,6 +19,12 @@ class Popular extends ApiBase
 	public function endpoints()
 	{
 		return [
+			'read/themes' => [
+				'callback' => [$this, 'popular_themes'],
+			],
+			'read/plugins' => [
+				'callback' => [$this, 'popular_plugins'],
+			],
 			'theme' => [
 				'callback' => [$this, 'popular_themes'],
 			],
