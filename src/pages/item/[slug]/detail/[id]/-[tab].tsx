@@ -27,7 +27,7 @@ export type DetailTabType = {
 
 export default function Component() {
 	const params = useParams('/item/:slug/detail/:id/:tab?');
-	const { data, isError, isLoading, isFetching } = useApiFetch<TPostItem>(
+	const { data, isError, isLoading } = useApiFetch<TPostItem>(
 		API.item.readDetail,
 		{
 			item_id: params.id
@@ -50,7 +50,7 @@ export default function Component() {
 					label: decodeEntities(data?.title ?? '')
 				}
 			]}
-			{...{ isError, isFetching, isLoading }}
+			{...{ isError, isLoading }}
 		>
 			{data && (
 				<div className="gm-reveal-stagger flex flex-col gap-7 lg:gap-10">

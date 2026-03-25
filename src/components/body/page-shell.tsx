@@ -27,7 +27,6 @@ type Props = {
 	title: string;
 	description?: string;
 	showTitle?: boolean;
-	isFetching?: boolean;
 	isLoading?: boolean;
 	isError?: boolean;
 	preloader?: JSX.Element;
@@ -47,7 +46,6 @@ export function AppPageShell({
 	title,
 	description,
 	showTitle = true,
-	isFetching = false,
 	isLoading = false,
 	isError = false,
 	preloader: PreloaderComponent,
@@ -99,7 +97,8 @@ export function AppPageShell({
 				className={cn(
 					'relative flex flex-col pb-8',
 					compactListing ? 'gap-3 sm:gap-4' : 'gap-5 sm:gap-7',
-					(isFetching || isLoading) && 'blur-sm'
+					// Blur only while showing the preloader; refetch would flicker if we blurred on every isFetching
+					isLoading && 'blur-sm'
 				)}
 			>
 				{breadcrump && (
@@ -150,8 +149,8 @@ export function AppPageShell({
 					</div>
 				)}
 				<Out />
-				{(isFetching || isLoading) && (
-					<div className="absolute left-0 top-0 h-full w-full cursor-progress"></div>
+				{isLoading && (
+					<div className="absolute left-0 top-0 h-full w-full cursor-progress" />
 				)}
 			</Container>
 		</div>

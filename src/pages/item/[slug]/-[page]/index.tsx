@@ -26,6 +26,7 @@ import { TPostItemCollection } from '@/types/item';
 import { EnumItemSlug } from '@/zod/item';
 import { useEffect, useMemo } from '@wordpress/element';
 import { LayoutGrid, List, SearchX } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { z } from 'zod';
 
 const sort_items: ReturnType<typeof useDataCollection>['sort'] = [
@@ -109,18 +110,18 @@ export default function Component() {
 		true
 	);
 	const { mode, setViewMode } = useViewMode();
+	const location = useLocation();
 	useEffect(() => {
 		window.scrollTo({
 			top: 0,
 			behavior: 'smooth'
 		});
-	}, [data]);
+	}, [page, location.search, params.data.slug]);
 	return (
 		<AppPageShell
 			title={item_type?.label ?? ''}
 			compactListing
 			showTitle={false}
-			isFetching={isFetching}
 			isLoading={isItemsLoading}
 			filterBar={
 				<FilterBar

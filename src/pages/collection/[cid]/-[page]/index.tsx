@@ -28,11 +28,7 @@ export default function CollectionDetail() {
 	>(API.collection.readDetail, {
 		id: Number(cid)
 	});
-	const {
-		data: items,
-		isLoading,
-		isFetching
-	} = useApiFetch<
+	const { data: items, isLoading } = useApiFetch<
 		CollectionResponse<BookmarkCollectionItemType>,
 		BookmarkCollectionDetailSchema
 	>(API.collection.readItems, {
@@ -56,7 +52,6 @@ export default function CollectionDetail() {
 			compactListing
 			showTitle={false}
 			isLoading={isLoading}
-			isFetching={isFetching}
 			breadcrump={[
 				{
 					label: __('Collection'),

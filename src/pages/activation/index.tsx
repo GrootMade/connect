@@ -9,13 +9,8 @@ import LicenseStatus from '../_components/license-status';
 import RegisterLicenseForm from './_components/register-license';
 
 export default function Component() {
-	const {
-		activated,
-		deactivate,
-		isDeactivatePending,
-		isFetching,
-		isLoading
-	} = useActivation();
+	const { activated, deactivate, isDeactivatePending, isLoading } =
+		useActivation();
 
 	return (
 		<AppPageShell
@@ -29,7 +24,6 @@ export default function Component() {
 							'Enter your license key to unlock updates and the full catalog.'
 						)
 			}
-			isFetching={isFetching}
 			isLoading={isLoading}
 			breadcrump={[
 				{

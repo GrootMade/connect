@@ -21,7 +21,7 @@ export default function Component() {
 		.default('theme')
 		.parse(_slug);
 	const item_type = SlugToItemType(slug);
-	const { data, isLoading, isFetching } = useApiFetch<TPostItemCollection>(
+	const { data, isLoading } = useApiFetch<TPostItemCollection>(
 		item_type.slug === 'theme'
 			? API.popular.readThemes
 			: API.popular.readPlugins
@@ -44,7 +44,6 @@ export default function Component() {
 			compactListing
 			showTitle={false}
 			isLoading={isLoading}
-			isFetching={isFetching}
 			breadcrump={[
 				{
 					label: title

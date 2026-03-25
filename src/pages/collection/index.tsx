@@ -18,7 +18,7 @@ import Collection from './_components/collection';
 export default function Component() {
 	const navigate = useNavigate();
 	const { active, activated } = useActivation();
-	const { data, isLoading, isFetching } = useApiFetch<
+	const { data, isLoading } = useApiFetch<
 		CollectionResponse<BookmarkCollectionType>
 	>(API.collection.read);
 	useEffect(() => {
@@ -39,7 +39,6 @@ export default function Component() {
 			compactListing
 			showTitle={false}
 			isLoading={isLoading}
-			isFetching={isFetching}
 			breadcrump={[
 				{
 					label: __('Collection')

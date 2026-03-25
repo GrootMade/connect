@@ -24,6 +24,7 @@ import { useParams } from '@/router';
 import { ItemStatsResponse, TPostItemCollection, TTerm } from '@/types/item';
 import { useEffect, useMemo } from '@wordpress/element';
 import { LayoutGrid, List, SearchX } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { z } from 'zod';
 
 /**
@@ -134,17 +135,17 @@ export default function Component() {
 	);
 
 	const { mode, setViewMode } = useViewMode();
+	const location = useLocation();
 
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
-	}, [data]);
+	}, [page, location.search]);
 
 	return (
 		<AppPageShell
 			title={__('Browse all')}
 			compactListing
 			showTitle={false}
-			isFetching={isFetching}
 			isLoading={isItemsLoading}
 			isError={isError}
 			error={
@@ -246,21 +247,22 @@ export default function Component() {
 					>
 						{data.data.length > 0 ? (
 							<>
-								{data.data.map((item, index) =>
-									mode === 'list' ? (
+								{data.data.map((item, index) => {
+									const itemKey = `${item.type}-${item.id}`;
+									return mode === 'list' ? (
 										<PostListItem
-											key={item.id}
+											key={itemKey}
 											item={item}
 											style={{ order: index }}
 										/>
 									) : (
 										<PostGridItem
-											key={item.id}
+											key={itemKey}
 											item={item}
 											style={{ order: index }}
 										/>
-									)
-								)}
+									);
+								})}
 								{mode === 'grid' &&
 									adsConfig.enabled &&
 									Array.from(
